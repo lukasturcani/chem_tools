@@ -199,7 +199,7 @@ if __name__ == '__main__':
         settings_content = {}
         exec(f.read(), settings_content)
 
-    pop = Population.load(args.input_file)
+    pop = Population.load(args.population_file)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
@@ -225,7 +225,7 @@ if __name__ == '__main__':
         f.write('='*len(log_title) + '\n')
         f.write(log_title + '\n')
         f.write('='*len(log_title) + '\n')
-        f.write('Input file: "{}"\n'.format(args.input_file))
+        f.write('Input file: "{}"\n'.format(args.population_file))
         f.write('Output file: "{}"\n'.format(args.output_file))
         f.write('Function: macromodel_opt()\n')
         f.write('settings = {}\n'.format(settings_content['settings']))
