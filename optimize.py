@@ -46,7 +46,7 @@ example
 
 """
 
-from mtk import Population, macromodel_opt
+from mtk import Population, Molecule, macromodel_opt
 import multiprocessing as mp
 from functools import wraps
 import os
@@ -199,7 +199,7 @@ if __name__ == '__main__':
         settings_content = {}
         exec(f.read(), settings_content)
 
-    pop = Population.load(args.population_file)
+    pop = Population.load(args.population_file, Molecule.fromdict)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
