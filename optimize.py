@@ -55,6 +55,7 @@ from uuid import uuid4
 from os.path import join
 from datetime import datetime
 import psutil
+import logging
 
 
 class Guard:
@@ -152,6 +153,7 @@ class Guard:
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=0)
 
     # Set up the command line parser.
     parser = argparse.ArgumentParser()
