@@ -56,7 +56,6 @@ from os.path import join
 from datetime import datetime
 import logging
 import psutil
-import logging
 
 
 class Guard:
