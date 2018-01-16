@@ -54,6 +54,7 @@ import argparse
 from uuid import uuid4
 from os.path import join
 from datetime import datetime
+import logging
 import psutil
 
 
@@ -143,6 +144,9 @@ class Guard:
                              self.mm_path,
                              self.settings,
                              self.md)
+
+        except Exception as ex:
+            logging.error(f'Error with {macro_mol.name}.', exc_info=True)
 
         finally:
             if self.dmp:
