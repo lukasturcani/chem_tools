@@ -57,7 +57,7 @@ if __name__ == '__main__':
             'output_file',
             help=('The path to a .json dump file. This will hold the'
                   ' population once the molecules have their fitness'
-                  ' values calculation.'))
+                  ' values calculated.'))
 
     parser.add_argument(
                 '-w', '--write',
