@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # Write a log of the settings to a file.
     log_file = os.path.splitext(args.output_file)[0] + '.log'
     with open(log_file, 'a') as f:
-        log_title = 'cage log - {}.'.format(datetime.now())
+        log_title = 'calc_fitness.py log - {}.'.format(datetime.now())
         f.write('='*len(log_title) + '\n')
         f.write(log_title + '\n')
         f.write('='*len(log_title) + '\n')
