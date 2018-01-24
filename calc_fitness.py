@@ -104,7 +104,7 @@ if __name__ == '__main__':
         log_title = 'calc_fitness.py log - {}.'.format(datetime.now())
         f.write('='*len(log_title) + '\n')
         f.write(log_title + '\n')
-        f.write('='*len(log_title) + '\n')
+        f.write('='*len(log_title) + '\n\n')
         f.write(f'Input file: "{args.input_file}"\n')
         f.write(f'Output file: "{args.output_file}"\n')
         f.write(f'Settings file content:\n\n{settings}\n\n')
