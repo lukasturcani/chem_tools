@@ -39,7 +39,7 @@ class Guard:
             return macro_mol
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
             'input_file',
@@ -108,3 +108,7 @@ if __name__ == '__main__':
         f.write(f'Input file: "{args.input_file}"\n')
         f.write(f'Output file: "{args.output_file}"\n')
         f.write(f'Settings file content:\n\n{settings}\n\n')
+
+
+if __name__ == '__main__':
+    main()

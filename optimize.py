@@ -155,7 +155,7 @@ class Guard:
             return macro_mol
 
 
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=0)
 
     # Set up the command line parser.
@@ -204,7 +204,7 @@ if __name__ == '__main__':
         settings_content = {}
         exec(f.read(), settings_content)
 
-    pop = Population.load(args.population_file, Molecule.fromdict)
+    pop = Population.load(args.population_file, Molecule.from_dict)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
@@ -236,3 +236,7 @@ if __name__ == '__main__':
         f.write('Function: macromodel_opt()\n')
         f.write('settings = {}\n'.format(settings_content['settings']))
         f.write('md = {}\n\n'.format(settings_content['md']))
+
+
+if __name__ == '__main__':
+    main()
