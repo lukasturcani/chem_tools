@@ -10,7 +10,7 @@ import networkx as nx
 import rdkit.Chem.AllChem as rdkit
 import itertools as it
 import logging
-from mtk import StructUnit
+from stk import StructUnit
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def fg_prune(folder, fg, fg_num, ext):
         The name of the functional group which the desired molecules
         must possess. The name must correspond to one of the name of a
         functional group defined within
-        :const:`mtk.functional_groups_list`.
+        :const:`stk.functional_groups_list`.
 
     fg_num : :class:`int`
         The number of functional groups of type `fg` which the molecule

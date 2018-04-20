@@ -1,8 +1,8 @@
 """
-Optimizes molecules held in an ``mtk`` ``.json`` dump file.
+Optimizes molecules held in an ``stk`` ``.json`` dump file.
 
 This script uses ``MacroModel`` to optimize the molecules.
-``MacroModel`` is run using :func:`mtk.macromodel_opt`.
+``MacroModel`` is run using :func:`stk.macromodel_opt`.
 
 This script is run as a command line program. See::
 
@@ -11,7 +11,7 @@ This script is run as a command line program. See::
 To run this file a second file with the optimization parameters must
 be created. This will be a ``Python`` file which defines two
 dictionaries, called `settings` and `md`. These correspond to the
-identically named arguments of :func:`mtk.macromodel_opt`. For
+identically named arguments of :func:`stk.macromodel_opt`. For
 example
 
 .. code-block:: python
@@ -46,7 +46,7 @@ example
 
 """
 
-from mtk import Population, Molecule, macromodel_opt
+from stk import Population, Molecule, macromodel_opt
 import multiprocessing as mp
 from functools import wraps
 import os
@@ -129,12 +129,12 @@ class Guard:
 
         Parameters
         ----------
-        macro_mol : :class:`mtk.Molecule`
+        macro_mol : :class:`stk.Molecule`
             The molecule to be optimized.
 
         Returns
         -------
-        :class:`mtk.Molecule`
+        :class:`stk.Molecule`
             The optimized molecule.
 
         """

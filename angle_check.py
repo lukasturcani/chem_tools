@@ -3,7 +3,7 @@ Checks the angle between the functional groups and centroid of a mol.
 
 """
 
-import mtk
+import stk
 import numpy as np
 
 
@@ -27,7 +27,7 @@ def calc_angle(mol_path, fg=None):
 
     """
 
-    mol = mtk.StructUnit(mol_path, fg)
+    mol = stk.StructUnit(mol_path, fg)
     c = mol.centroid()
     a1 = mol.atom_coords(mol.bonder_ids[0]) - c
     a2 = mol.atom_coords(mol.bonder_ids[1]) - c

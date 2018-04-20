@@ -1,10 +1,10 @@
 """
-Calculates fitness of molecules held in an mtk ``.json`` dump file.
+Calculates fitness of molecules held in an stk ``.json`` dump file.
 
 """
 
-from mtk import Population, Molecule
-from mtk.ga import fitness
+from stk import Population, Molecule
+from stk.ga import fitness
 
 import multiprocessing as mp
 from uuid import uuid4
