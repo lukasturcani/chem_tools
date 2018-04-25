@@ -225,6 +225,10 @@ def main():
     rpop = Population(*results)
     rpop.dump(args.output_file)
 
+    if len(pop) != len(rpop):
+        logging.info(('Input and output population sizes do not match. '
+                      'This means some molecules were not optimized.'))
+
     # Write a log of the settings to a file.
     log_file = os.path.splitext(args.output_file)[0] + '.log'
     with open(log_file, 'a') as f:
