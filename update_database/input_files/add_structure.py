@@ -2,12 +2,15 @@ def mongo(molecule, key):
     """
     Crates a MongoDB document for a molecule.
 
+    This function creates a dictionary which appends a new structure
+    to the "structure" field of a molecule in the MongoDB.
+
     Parameters
     ----------
     molecule : :class:`stk.Molecule`
         The molecule to store in the database.
 
-    key_fn : :class:`function`
+    key : :class:`function`
         A function which takes `molecule` as a parameter and creates
         and entry for the "key" field in the database.
 

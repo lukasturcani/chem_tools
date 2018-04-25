@@ -74,20 +74,23 @@ def update_databse(db, pop):
 
     """
 
-
+    ...
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mongo_uri', help='URI to the MongoDB server.')
     parser.add_argument('db_name', help='Name of the database.')
-    parser.add_argument('representation_file',
+    parser.add_argument('input_file',
                         help=('A Python file which defines a single '
                               'function called "mongo". The function '
-                              'takes a single parameter, which will '
-                              'be an stk Molecule object. The function '
-                              'will return a dictionary which can be '
-                              'placed into the MongoDB.'))
+                              'takes two parameters, the first will '
+                              'be an stk Molecule object. The second '
+                              'parameter is supplied automatically. '
+                              'It is the "key" function defined in this '
+                              'file. The "mongo" function '
+                              'will return a dictionary which is used '
+                              'to update the MongoDB.'))
     parser.add_argument('population_file', nargs='+',
                         help=('An stk Population JSON dump file. '
                               'The molecules stored in the file will '
