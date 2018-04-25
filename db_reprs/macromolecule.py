@@ -1,4 +1,4 @@
-def macromolecule(molecule, key):
+def mongo(molecule, key):
     """
     Crates a MongoDB document for a molecule.
 
