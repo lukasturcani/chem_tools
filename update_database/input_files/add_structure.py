@@ -23,6 +23,9 @@ def mongo(molecule, key):
     return {
         '$set': {'key': key(molecule)},
 
+        '$addToSet': {'tags': {'$each': ['liverpool_refined',
+                                         'amines2aldehydes3']}},
+
         '$push': {
                   'structures': {
                        'structure': molecule.mdl_mol_block(),
