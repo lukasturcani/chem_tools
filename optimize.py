@@ -135,7 +135,8 @@ class Guard:
         Returns
         -------
         :class:`stk.Molecule`
-            The optimized molecule.
+            The optimized molecule. Returns ``None`` when the
+            optimization fails.
 
         """
 
@@ -147,6 +148,7 @@ class Guard:
 
         except Exception as ex:
             logging.error(f'Error with {macro_mol.name}.', exc_info=True)
+            macro_mol = None
 
         finally:
             if self.dmp:
@@ -215,7 +217,7 @@ def main():
                      args.dump)
 
     with mp.Pool(args.num_cores) as pool:
-        results = pool.map(opt_func, pop)
+        results = [r for r in pool.map(opt_func, pop) if r is not None]
         if args.write:
             for i, m in enumerate(results):
                 m.write(join(args.write, f'{i}.mol'))
