@@ -11,10 +11,24 @@ from collections import OrderedDict
 
 def topology_key(topology):
     """
+    Creates a key for :class:`stk.Topology`.
+
+    Parameters
+    ----------
+    topology : :class:`stk.Topology`
+        A topology.
+
+    Returns
+    -------
+    :class:`dict`
+        A key which identifies the topology.
 
     """
 
-    ...
+    d = {'class': topology.__class__.__name__}
+    d.upate({key: value for key, value in topology.__dict__.items() if
+             not key.startswith('_')})
+    return d
 
 
 def key(molecule):
@@ -54,6 +68,14 @@ def key(molecule):
     }
 
 
+def update_databse(db, pop):
+    """
+
+
+    """
+
+
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -72,7 +94,14 @@ def main():
                               'be saved in the MongoDB.'))
 
     args = parser.parse_args()
+
     db = pymongo.MongoClient(args.mongo_uri)[args.db_name]
+
+    p = stk.Population()
+    for pop_file in args.population_file:
+        p.add_members(stk.Population.load(pop_file, stk.Molecule.from_dict))
+
+    update_database(db, p)
 
 
 if __name__ == '__main__':
