@@ -24,7 +24,6 @@ def mongo(molecule, key):
         '$set': {'key': key(molecule)},
 
         '$push': {
-                  'tags': {'$each': []},
                   'structures': {
                        'structure': molecule.mdl_mol_block(),
                        'calc_params': {
