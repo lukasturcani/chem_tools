@@ -1,4 +1,4 @@
-def mongo(molecule):
+def mongo(molecule, key):
     """
     Crates a MongoDB document for a molecule.
 
@@ -10,6 +10,9 @@ def mongo(molecule):
     molecule : :class:`stk.Molecule`
         The molecule to store in the database.
 
+    key : :class:`function`
+        Creates the key for the molecule.
+
     Returns
     -------
     :class:`dict`
@@ -18,6 +21,8 @@ def mongo(molecule):
     """
 
     return {
+        '$set': {'key': key(molecule)},
+
         '$push': {'structures': {
                        'structure': molecule.mdl_mol_block(),
                        'calc_params': {'software': 'schrodinger2017-4',
