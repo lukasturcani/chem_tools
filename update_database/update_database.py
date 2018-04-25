@@ -68,15 +68,6 @@ def key(molecule):
     }
 
 
-def update_databse(db, pop):
-    """
-
-
-    """
-
-    ...
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mongo_uri', help='URI to the MongoDB server.')
@@ -84,11 +75,8 @@ def main():
     parser.add_argument('input_file',
                         help=('A Python file which defines a single '
                               'function called "mongo". The function '
-                              'takes two parameters, the first will '
-                              'be an stk Molecule object. The second '
-                              'parameter is supplied automatically. '
-                              'It is the "key" function defined in this '
-                              'file. The "mongo" function '
+                              'takes a parameter, which is an stk '
+                              'Molecule object. The function '
                               'will return a dictionary which is used '
                               'to update the MongoDB.'))
     parser.add_argument('population_file', nargs='+',
@@ -104,7 +92,12 @@ def main():
     for pop_file in args.population_file:
         p.add_members(stk.Population.load(pop_file, stk.Molecule.from_dict))
 
-    update_database(db, p)
+    with open(args.input_file, 'r') as f:
+        input_file = {}
+        exec(f.read(), {}, input_file)
+
+    for mol in p:
+        db.upate_one(key(mol), input_file['mongo'](mol))
 
 
 if __name__ == '__main__':
