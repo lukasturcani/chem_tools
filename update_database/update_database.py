@@ -56,11 +56,11 @@ def topology_key(topology):
     return d
 
 
-def su_key(bb):
+def struct_unit_key(bb):
     return {'inchi': bb.inchi}
 
 
-def mm_key(molecule):
+def macromol_key(molecule):
     """
     Creates a unique key for each `molecule`.
 
@@ -151,7 +151,8 @@ def main():
                                               stk.Molecule.from_dict))
 
         for mol in p:
-            key = mm_key if isinstance(mol, stk.MacroMolecule) else su_key
+            key = (macromol_key if isinstance(mol, stk.MacroMolecule)
+                   else struct_unit_key)
             col.update_one(key(mol),
                            input_file['update'](mol, key),
                            True)
