@@ -1,4 +1,4 @@
-def mongo(molecule, key):
+def update(molecule, key):
     """
     Crates a MongoDB document for a molecule.
 

@@ -158,9 +158,9 @@ def main():
                            True)
     else:
         for match in col.find(input_file['query']):
-            col.update_one({'_id': match['_id']},
-                           input_file['update'](match),
-                           True)
+            q = {'_id': match['_id']}
+            q.update(input_file['query'])
+            col.update_one(q, input_file['update'](match), True)
 
 
 if __name__ == '__main__':
