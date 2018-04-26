@@ -121,13 +121,23 @@ def key(molecule):
 
 def main():
     parser = argparse.ArgumentParser(description=(
-           'Any building block will be placed in the "bbs" '
-           'database and "main" collection.'))
+        'Updates a MongoDB with molecular data. \n\n'
+        'To identify which molecules to update, the user can provide '
+        'either a series of stk Population JSON dump files or a '
+        'query file. If stk Population files are provided, then '
+        'molecules found in those files are updated. If a query file '
+        'is provided, then entries in the MongoDB matching the query '
+        'are updated. The query file is a Python file which defines '
+        'a function called "query". The function takes two parameters.'
+        ' The first one is a molecule and the second is the "key" '
+        'function defined in this module. The "query" function must '
+        'return a dictionary suitable for use a MongoDB query.'
+    ))
     parser.add_argument('mongo_uri', help='URI to the MongoDB server.')
     parser.add_argument('db', help='Name of the database.')
     parser.add_argument('collection', help='Name of the collection.')
-    parser.add_argument('input_file',
-                        help=('A Python file which defines a single '
+    parser.add_argument('update_file',
+                        help=('A Python file which defines a '
                               'function called "mongo". The function '
                               'takes 2 parameters. The first is an stk '
                               'Molecule object. The second is the '
@@ -135,11 +145,23 @@ def main():
                               'The function '
                               'will return a dictionary which is used '
                               'to update the MongoDB.'))
-    parser.add_argument('population_file', nargs='+',
+
+    query_input = parser.add_mutually_exclusive_group()
+    query_input.add_argument(
+                      '-q',
+                      metavar='query_file',
+                      help=('A python file which defines a single '
+                            'a single variable called "query". This '
+                            'holds the query to be used for updating '
+                            'MongoDB.'))
+
+    query_input.add_argument(
+                        '-p',
+                        metavar='population_file',
+                        nargs='+',
                         help=('An stk Population JSON dump file. '
                               'The molecules stored in the file will '
-                              'be saved in the MongoDB.'))
-    parser.add_argument('-s', '--save_bbs', action='store_true')
+                              'be used to update the MongoDB.'))
 
     args = parser.parse_args()
 
