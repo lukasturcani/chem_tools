@@ -80,9 +80,9 @@ def update(match, client):
                       in match['structures'] if
                       structure['calc_params'] == calc_params)
 
-    bb1_inchi = match['key']['building_blocks'][0]['inchi']
+    bb1_inchi = match['building_blocks'][0]['inchi']
     bb1_block = client.stk.bbs.find_one({'inchi': bb1_inchi})['structure']
-    bb2_inchi = match['key']['building_blocks'][1]['inchi']
+    bb2_inchi = match['building_blocks'][1]['inchi']
     bb2_block = client.stk.bbs.find_one({'inchi': bb2_inchi})['structure']
 
     cage = rdkit.MolFromMolBlock(cage_block, sanitize=False)

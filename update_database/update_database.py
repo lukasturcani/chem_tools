@@ -145,7 +145,7 @@ def main():
 
     with open(args.input_file, 'r') as f:
         input_file = {}
-        exec(f.read(), {}, input_file)
+        exec(f.read(), input_file)
 
     if args.population_files:
         p = stk.Population()
@@ -160,9 +160,8 @@ def main():
                            **input_file['update'](mol, key, client))
     else:
         for match in col.find(input_file['query']):
-            q = {'_id': match['_id']}
-            q.update(input_file['query'])
-            col.update_one(q, **input_file['update'](match, client))
+            col.update_one({'_id': match['_id']},
+                           **input_file['update'](match, client))
 
 
 if __name__ == '__main__':
