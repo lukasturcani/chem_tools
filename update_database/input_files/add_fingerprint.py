@@ -9,7 +9,12 @@ def bb_fingerprint(mols, bits, radius):
 
     """
 
-    ...
+    bbs = mols[1:]
+    full_fp = []
+    for mol in bbs:
+        fp = rdkit.GetMorganFingerprintAsBitVect(mol, radius, bits)
+        full_fp.extend(list(fp))
+    return full_fp
 
 
 def cage_fingerprint(mols, bits, radius):
@@ -17,7 +22,7 @@ def cage_fingerprint(mols, bits, radius):
 
     """
 
-    ...
+    return list(rdkit.GetMorganFingerprintAsBitVect(mols[0], radius, bits))
 
 
 def cage_bb_fingerprint(mols, bits, radius):
@@ -25,7 +30,11 @@ def cage_bb_fingerprint(mols, bits, radius):
 
     """
 
-    ...
+    full_fp = []
+    for mol in mols:
+        fp = rdkit.GetMorganFingerprintAsBitVect(mol, radius, bits)
+        full_fp.extend(list(fp))
+    return full_fp
 
 
 def update(match, client):
