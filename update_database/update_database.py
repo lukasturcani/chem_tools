@@ -109,19 +109,21 @@ def main():
      'things. One will be a variable called "query". This will be a '
      'dictionary which is used to match documents in the database. '
      'The second will be a function called "update". The function '
-     'will take a single parameter. This will be a document '
-     'matched by the "query" dictionary. The function must return '
-     'a dictionary, which is used to update the document matched by '
-     '"query" and passed as an argument to the function.\n\n'
+     'will take two parameters. The first will be a document '
+     'matched by the "query" dictionary. The second will be the '
+     'MongoClient instance running the database. The function must '
+     'return a dictionary, which provides the parameters for '
+     'the "update_one" function, with the exception of "filter".\n\n'
      'When the "-p" option is used the input file will only need to '
      'define the "update" function. In this case, the function will '
-     'take two parameters. The first will be a molecule from the '
+     'take three parameters. The first will be a molecule from the '
      'populations passed via the "-p" option. The second will be '
      'a "key" function defined in this module. The "key" function '
      'will be "su_key" if the molecule is an stk StructUnit object '
      'or "mm_key" if the molecule is an stk MacroMolecule object. '
-     'The function will return a dictionary which is used to update '
-     'the document corresponding to that molecule in the MongoDB.')
+     'The third will be the MongoClient as before. '
+     'The function will return a dictionary mapping parameters for '
+     'the "update_one" function as before.')
 
     parser = argparse.ArgumentParser(
                 description=fill(description, replace_whitespace=False),
@@ -154,13 +156,12 @@ def main():
             key = (macromol_key if isinstance(mol, stk.MacroMolecule)
                    else struct_unit_key)
             col.update_one(key(mol),
-                           input_file['update'](mol, key),
-                           True)
+                           **input_file['update'](mol, key, client))
     else:
         for match in col.find(input_file['query']):
             q = {'_id': match['_id']}
             q.update(input_file['query'])
-            col.update_one(q, input_file['update'](match), True)
+            col.update_one(q, **input_file['update'](match, client))
 
 
 if __name__ == '__main__':

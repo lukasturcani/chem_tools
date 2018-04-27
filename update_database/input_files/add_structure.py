@@ -16,11 +16,11 @@ def update(molecule, key):
     Returns
     -------
     :class:`dict`
-        A document representing `molecule`.
+        Parameters for :func:`update_one`.
 
     """
 
-    return {
+    update = {
         '$set': {'key': key(molecule)},
 
         '$addToSet': {
@@ -51,3 +51,4 @@ def update(molecule, key):
                                   }
                    }
                  }
+    return {'update': update, 'upsert': True}
