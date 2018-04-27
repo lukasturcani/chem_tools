@@ -159,9 +159,11 @@ def main():
             col.update_one(key(mol),
                            **input_file['update'](mol, key, client))
     else:
-        for match in col.find(input_file['query']):
+        c = col.find(input_file['query'], no_cursor_timeout=True)
+        for match in c:
             col.update_one({'_id': match['_id']},
                            **input_file['update'](match, client))
+        c.close()
 
 
 if __name__ == '__main__':
