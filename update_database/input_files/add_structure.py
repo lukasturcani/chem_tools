@@ -24,7 +24,6 @@ def update(molecule, key, client):
     """
 
     update = {
-        '$set': {'key': key(molecule)},
 
         '$addToSet': {
                   'tags': {'$each': ['liverpool_refined',

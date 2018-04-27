@@ -134,6 +134,7 @@ def main():
     parser.add_argument('input_file')
     parser.add_argument('-p',
                         metavar='population_file',
+                        dest='population_files',
                         nargs='+',
                         help='An stk Population JSON dump file.')
 
@@ -146,9 +147,9 @@ def main():
         input_file = {}
         exec(f.read(), {}, input_file)
 
-    if args.population_file:
+    if args.population_files:
         p = stk.Population()
-        for pop_file in args.population_file:
+        for pop_file in args.population_files:
             p.add_members(stk.Population.load(pop_file,
                                               stk.Molecule.from_dict))
 
