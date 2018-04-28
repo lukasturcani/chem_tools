@@ -71,9 +71,9 @@ def tag_fg_atoms(mol, fg):
         atom.SetProp('fg', '1')
 
     attached_mol = rdkit.MolFromSmarts(fg[1])
-    for idx in flatten(mol.GetSubstructMatches(attached_mol)):
+    for i, idx in enumerate(flatten(mol.GetSubstructMatches(attached_mol))):
         atom = mol.GetAtomWithIdx(idx)
-        atom.SetProp('attached', '1')
+        atom.SetProp('attached', str(i))
 
 
 def remove_fg_atoms(mol):
@@ -87,16 +87,27 @@ def remove_fg_atoms(mol):
 
     Returns
     -------
-    :class:`rdkit.Chem.rdchem.Mol`
-        The molecule with atoms removed.
+    :class:`tuple`
+        The first element is a :class:`rdkit.Chem.rdchem.Mol`,
+        which is the molecule with atoms removed. The second element
+        is a :class:`dict`. It maps the id of an atom bonded to the
+        functional group to the coordinates of the functional group
+        atom it was bonded to.
 
     """
 
+    positions = {}
     emol = rdkit.EditableMol(mol)
+    conf = mol.GetConformer()
     for atom in reversed(mol.GetAtoms()):
+        aid = atom.GetIdx()
         if atom.HasProp('fg'):
-            emol.RemoveAtom(atom.GetIdx())
-    return emol.GetMol()
+            for n in atom.GetNeighbors():
+                if n.HasProp('attached'):
+                    id_ = n.GetProp('attached')
+                    positions[id_] = conf.GetAtomPosition(aid)
+            emol.RemoveAtom(aid)
+    return emol.GetMol(), positions
 
 
 def count_attached(mol):
@@ -118,7 +129,7 @@ def count_attached(mol):
     return sum(1 for x in mol.GetAtoms() if x.HasProp('attached'))
 
 
-def bond_fragments(mol):
+def bond_fragments(mol, positions):
     """
     Creates bonds beween fragments.
 
@@ -128,6 +139,10 @@ def bond_fragments(mol):
     ----------
     mol : :class:`rdkit.Chem.rdchem.Mol`
         A molecule composed of fragments which are to be joined.
+
+    positions : :class:`dict`
+        Maps the id of an 'attached' atom to the position of the
+        functional group atom bonded to it.
 
     Returns
     -------
@@ -143,11 +158,25 @@ def bond_fragments(mol):
                       mol.GetAtomWithIdx(x).HasProp('attached')]
     emol = rdkit.EditableMol(mol)
     for main_atom, fg in zip(attached_atoms, frags):
+        atom = mol.GetAtomWithIdx(main_atom)
+        positions[fg[0]] = positions[atom.GetProp('attached')]
         emol.AddBond(main_atom, fg[0], rdkit.BondType.SINGLE)
-    return emol.GetMol()
+
+    mol = emol.GetMol()
+    conf = mol.GetConformer()
+    for atom, *_ in frags:
+        conf.SetAtomPosition(atom, positions[atom])
+    return mol
 
 
-def add_new_fg(mol, fg):
+def conf_energies(mol):
+    ff = rdkit.UFFGetMoleculeForceField
+    for conf in mol.GetConformers():
+        id_ = conf.GetId()
+        yield ff(mol, confId=id_).CalcEnergy(), id_
+
+
+def add_new_fg(mol, fg, positions):
     """
     The functional group is added to the atoms with the 'attached'
     property.
@@ -160,6 +189,10 @@ def add_new_fg(mol, fg):
     fg : class:`str`
         The SMARTS of the functional group being added to the molecule.
 
+    positions : :class:`dict`
+        Maps the id of an 'attached' atom to the position of the
+        functional group atom bonded to it.
+
     Returns
     -------
     :class:`rdkit.Chem.rdchem.Mol`
@@ -169,10 +202,16 @@ def add_new_fg(mol, fg):
 
     fg = rdkit.MolFromSmarts(fg)
     fg.GetAtomWithIdx(0).SetProp('attached', '1')
-    attached = [x for x in mol.GetAtoms() if x.HasProp('attached')]
-    for attached_atom in attached:
+    for i in range(sum(1 for x in mol.GetAtoms() if x.HasProp('attached'))):
         mol = rdkit.CombineMols(mol, fg)
-    return bond_fragments(mol)
+    return bond_fragments(mol, positions)
+
+
+def update_stereochemistry(mol):
+    for atom in mol.GetAtoms():
+        atom.UpdatePropertyCache()
+    rdkit.AssignAtomChiralTagsFromStructure(mol)
+    rdkit.AssignStereochemistry(mol, True, True, True)
 
 
 def change_fg(molfile, start, end, fgs):
@@ -215,25 +254,28 @@ def change_fg(molfile, start, end, fgs):
         logger.debug('tagging')
         tag_fg_atoms(mol, fgs[start])
         logger.debug('removing')
-        mol = remove_fg_atoms(mol)
+        mol, positions = remove_fg_atoms(mol)
         logger.debug('adding')
-        mol = add_new_fg(mol, fgs[end][0])
-        # The valence is fucked up unless the Hs get removed and
-        # readded.
-        mol.RemoveAllConformers()
-        mol = rdkit.RemoveHs(mol)
-        mol = rdkit.AddHs(mol)
-        for atom in mol.GetAtoms():
-            atom.UpdatePropertyCache()
-        for bond in mol.GetBonds():
-            bond.SetStereo(rdkit.BondStereo.STEREONONE)
+        mol = add_new_fg(mol, fgs[end][0], positions)
         rdkit.SanitizeMol(mol)
-        rdkit.EmbedMolecule(mol, rdkit.ETKDG())
+        update_stereochemistry(mol)
+
+        # Give it 3D coords.
+        rdkit.EmbedMultipleConfs(mol, 100, rdkit.ETKDG())
+
+        # Get rid of redundant conformers.
+        conf = mol.GetConformer(min(conf_energies(mol))[1])
+        conf = rdkit.Conformer(conf)
+        conf.SetId(0)
+        mol.RemoveAllConformers()
+        mol.AddConformer(conf)
+
         logger.debug('done')
         return os.path.splitext(os.path.basename(molfile))[0], mol
 
     except Exception as ex:
-        print(ex)
+        logger.error(f'An error occured when processing {molfile}.',
+                     exc_info=True)
 
 
 if __name__ == '__main__':
@@ -267,7 +309,12 @@ if __name__ == '__main__':
                         help=('If set, run serially on directories,'
                               ' rather than in parallel.'))
 
+    parser.add_argument('-l', '--logging_level',
+                        type=int, default=logging.INFO)
+
     args = parser.parse_args()
+
+    logging.basicConfig(level=args.logging_level)
 
     if args.directory:
         if not os.path.exists(args.output_file):
@@ -290,6 +337,7 @@ if __name__ == '__main__':
                 new_mols.append(pfunc(name))
 
         logger.debug('writing')
+
         for i, (molname, mol) in enumerate(new_mols):
             rdkit.MolToMolFile(mol,
                                join(args.output_file,
