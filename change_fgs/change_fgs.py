@@ -280,6 +280,8 @@ def change_fg(molfile, start, end, fgs):
         mol, positions = remove_fg_atoms(mol)
         logger.debug('adding')
         mol = add_new_fg(mol, fgs[end][0], positions)
+        # Valence of Hs is fucked up unless Hs are removed and readded.
+        mol = rdkit.AddHs(rdkit.RemoveHs(mol))
         rdkit.SanitizeMol(mol)
         update_stereochemistry(mol)
 
