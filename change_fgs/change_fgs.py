@@ -13,7 +13,6 @@ from os.path import join
 import logging
 
 logger = logging.getLogger(__name__)
-# logging.basicConfig(level=logging.DEBUG)
 
 init_funcs = {'.mol': rdkit.MolFromMolFile,
               '.mol2': rdkit.MolFromMol2File}
@@ -47,7 +46,9 @@ def tag_fg_atoms(mol, fg):
 
     Atoms belonging to the functional group are given the property
     'fg'. Atoms not part of the functional group but bonded to it are
-    given the property 'attached'.
+    given the property 'attached'. The value held by the property
+    'attached' is a unique id for that atom, which does not change
+    when other atoms are removed or added.
 
     Parameters
     ----------
@@ -102,6 +103,8 @@ def remove_fg_atoms(mol):
     for atom in reversed(mol.GetAtoms()):
         aid = atom.GetIdx()
         if atom.HasProp('fg'):
+            # Save the position of the deleted fg atom with the id of
+            # the 'attached' atom.
             for n in atom.GetNeighbors():
                 if n.HasProp('attached'):
                     id_ = n.GetProp('attached')
@@ -163,6 +166,10 @@ def bond_fragments(mol, positions):
         emol.AddBond(main_atom, fg[0], rdkit.BondType.SINGLE)
 
     mol = emol.GetMol()
+
+    # For the fg atom bonded to 'attached' use the previous coordinates.
+    # This ensures stereo chemistry is the same as in the original
+    # molecule.
     conf = mol.GetConformer()
     for atom, *_ in frags:
         conf.SetAtomPosition(atom, positions[atom])
@@ -170,6 +177,22 @@ def bond_fragments(mol, positions):
 
 
 def conf_energies(mol):
+    """
+    Yields the energy of each conformer.
+
+    Parameters
+    ----------
+    mol : :class:`rdkit.Chem.rdchem.Mol`
+        The molecule whose conformers have their energy calculated.
+
+    Yields
+    ------
+    :class:`tuple`
+        The first element is the energy of the conformer and the second
+        element is the id of the conformer.
+
+    """
+
     ff = rdkit.UFFGetMoleculeForceField
     for conf in mol.GetConformers():
         id_ = conf.GetId()
