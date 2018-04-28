@@ -196,8 +196,11 @@ def change_fg(molfile, start, end, fgs):
 
     Returns
     -------
-    :class:`rdkit.Chem.rdchem.Mol`
-        The molecule with the functional group substituted.
+    :class:`tuple`
+        The first element of the tuple is a :class:`str` holding the
+        name of the molecule as given by `molfile`. This is the file
+        root. The second element is a :class:`rdkit.Chem.rdchem.Mol`.
+        It is the molecule with the functional group substituted.
 
     """
 
@@ -227,7 +230,7 @@ def change_fg(molfile, start, end, fgs):
         rdkit.SanitizeMol(mol)
         rdkit.EmbedMolecule(mol, rdkit.ETKDG())
         logger.debug('done')
-        return mol
+        return os.path.splitext(os.path.basename(molfile))[0], mol
 
     except Exception as ex:
         print(ex)
@@ -287,14 +290,15 @@ if __name__ == '__main__':
                 new_mols.append(pfunc(name))
 
         logger.debug('writing')
-        for i, mol in enumerate(new_mols):
+        for i, (molname, mol) in enumerate(new_mols):
             rdkit.MolToMolFile(mol,
                                join(args.output_file,
-                                    '{}.mol'.format(i)),
+                                    f'{molname}.mol'),
                                forceV3000=True)
 
     else:
-        new_mol = change_fg(args.input_file,
+        _, new_mol = change_fg(
+                            args.input_file,
                             args.initial_fg,
                             args.final_fg,
                             fgs)
