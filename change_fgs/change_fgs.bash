@@ -1,5 +1,4 @@
-DIRS=(amines_2f amines_3f aldehydes_2f aldehydes_3f)
-for DIR in ${DIRS[*]}
+for DIR
 do
     python /home/lukas/documents/molder/database_creation/change_fgs.py -d $DIR ${DIR%s_?f} ${DIR}_amine amine
     python /home/lukas/documents/molder/database_creation/change_fgs.py -d $DIR ${DIR%s_?f} ${DIR}_aldehyde aldehyde
