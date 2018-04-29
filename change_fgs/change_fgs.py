@@ -19,7 +19,8 @@ init_funcs = {'.mol': rdkit.MolFromMolFile,
 
 # When adding new functional groups make sure that the first SMARTS
 # in the tuple begins with the atom which has a bond added when the
-# fg is being added to another molecule.
+# fg is being added to another molecule and the second SMARTS matches
+# the atom which gets bonded to the functional group.
 fgs = {'amine': ('[N]([H])[H]', '[$([*][N]([H])[H])]'),
        'aldehyde': ('[C](=[O])[H]', '[$([*][C](=[O])[H])]'),
        'carboxylic_acid': ('[C](=[O])-[O][H]',
@@ -29,7 +30,14 @@ fgs = {'amine': ('[N]([H])[H]', '[$([*][N]([H])[H])]'),
        'bromine': ('[Br]', '[$([*][Br])]'),
        'iodine': ('[I]', '[$([*][I])]'),
        'alcohol': ('[C]([H])([H])-[O][H]',
-                   '[$([*][C]([H])([H])-[O][H])]')}
+                   '[$([*][C]([H])([H])-[O][H])]'),
+       'alkene': ('[C]=[C]([H])[H]', '[$([*][C]=[C]([H])[H])]'),
+       'alkyne': ('[C]#[C][H]', '$([*][C]#[C][H])'),
+       'thiol': ('[S][H]', '[$([*][S][H])'),
+       'amide': ('[C](=[O])[N]([H])[H]',
+                 '[$([*][C](=[O])[N]([H])[H])]'),
+       'boronic_acid': ('[B]([O][H])[O][H]',
+                        '[$([*][B]([O][H])[O][H])]')}
 
 
 def flatten(iterable):
