@@ -207,6 +207,36 @@ def conf_energies(mol):
         yield ff(mol, confId=id_).CalcEnergy(), id_
 
 
+def remake_mol(mol):
+    """
+    Creates a copy of `mol` from scratch.
+
+    This fixes fucked up valences which occur otherwise.
+
+    Paramters
+    ---------
+    mol : :class:`rdkit.Chem.rdchem.Mol`
+        The molecule to be copied.
+
+    Returns
+    -------
+    class:`rdkit.Chem.rdchem.Mol`
+        A copy of `mol`.
+
+    """
+
+    emol = rdkit.EditableMol(rdkit.Mol())
+    for atom in mol.GetAtoms():
+        emol.AddAtom(rdkit.Atom(atom.GetAtomicNum()))
+    for bond in mol.GetBonds():
+        emol.AddBond(bond.GetBeginAtomIdx(),
+                     bond.GetEndAtomIdx(),
+                     bond.GetBondType())
+    new_mol = emol.GetMol()
+    new_mol.AddConformer(rdkit.Conformer(mol.GetConformer()))
+    return new_mol
+
+
 def add_new_fg(mol, fg, positions):
     """
     The functional group is added to the atoms with the 'attached'
@@ -288,8 +318,8 @@ def change_fg(molfile, start, end, fgs):
         mol, positions = remove_fg_atoms(mol)
         logger.debug('adding')
         mol = add_new_fg(mol, fgs[end][0], positions)
-        # Valence of Hs is fucked up unless Hs are removed and readded.
-        mol = rdkit.AddHs(rdkit.RemoveHs(mol))
+        # Valence is fucked up unless molecule is remade.
+        mol = remake_mol(mol)
         rdkit.SanitizeMol(mol)
         update_stereochemistry(mol)
 
