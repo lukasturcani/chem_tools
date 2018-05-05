@@ -206,7 +206,6 @@ def main():
         settings_content = {}
         exec(f.read(), settings_content)
 
-    pop = Population.load(args.population_file, Molecule.from_dict)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
@@ -217,6 +216,7 @@ def main():
                      args.dump)
 
     with mp.Pool(args.num_cores) as pool:
+        pop = Population.load(args.population_file, Molecule.from_dict)
         results = [r for r in pool.map(opt_func, pop) if r is not None]
         if args.write:
             for i, m in enumerate(results):
@@ -226,8 +226,8 @@ def main():
     rpop.dump(args.output_file)
 
     if len(pop) != len(rpop):
-        logging.info(('Input and output population sizes do not match. '
-                      'This means some molecules were not optimized.'))
+        logging.warning(('Input and output population sizes do not match. '
+                         'This means some molecules were not optimized.'))
 
     # Write a log of the settings to a file.
     log_file = os.path.splitext(args.output_file)[0] + '.log'
