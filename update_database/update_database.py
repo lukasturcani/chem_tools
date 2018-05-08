@@ -9,6 +9,7 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 from textwrap import fill
+import multiprocessing as mp
 
 
 def cage_key(topology):
@@ -109,21 +110,19 @@ def main():
      'things. One will be a variable called "query". This will be a '
      'dictionary which is used to match documents in the database. '
      'The second will be a function called "update". The function '
-     'will take two parameters. The first will be a document '
-     'matched by the "query" dictionary. The second will be the '
-     'MongoClient instance running the database. The function must '
-     'return a dictionary, which provides the parameters for '
+     'will take one argument. The argument will be a document '
+     'matched by the "query" dictionary. The function must return two '
+     'things. First, it must return the argument received as input. '
+     'Second, it must '
+     'return a dictionary, which provides the arguments for '
      'the "update_one" function, with the exception of "filter".\n\n'
      'When the "-p" option is used the input file will only need to '
      'define the "update" function. In this case, the function will '
-     'take three parameters. The first will be a molecule from the '
-     'populations passed via the "-p" option. The second will be '
-     'a "key" function defined in this module. The "key" function '
-     'will be "su_key" if the molecule is an stk StructUnit object '
-     'or "mm_key" if the molecule is an stk MacroMolecule object. '
-     'The third will be the MongoClient as before. '
-     'The function will return a dictionary mapping parameters for '
-     'the "update_one" function as before.')
+     'take one parameter. It will be a molecule from the '
+     'populations passed via the "-p" option. The function will '
+     'return two things. First, the molecule passed as an argument. '
+     'Second, a dictionary which provides the arguments for '
+     'the "update_one" function, with the exception of "filter".')
 
     parser = argparse.ArgumentParser(
                 description=fill(description, replace_whitespace=False),
@@ -144,25 +143,28 @@ def main():
     col = client[args.db][args.collection]
 
     with open(args.input_file, 'r') as f:
-        input_file = {}
-        exec(f.read(), input_file)
+        exec(f.read(), globals())
 
     if args.population_files:
-        p = stk.Population()
-        for pop_file in args.population_files:
-            p.add_members(stk.Population.load(pop_file,
-                                              stk.Molecule.from_dict))
+        with mp.Pool() as pool:
+            p = stk.Population()
+            for pop_file in args.population_files:
+                p.add_members(stk.Population.load(pop_file,
+                                                  stk.Molecule.from_dict))
 
-        for mol in p:
-            key = (macromol_key if isinstance(mol, stk.MacroMolecule)
-                   else struct_unit_key)
-            col.update_one(key(mol),
-                           **input_file['update'](mol, key, client))
+            update_fn = globals()['update']
+            updates = pool.map(update_fn, p)
+            for mol, update in updates:
+                key = (macromol_key if isinstance(mol, stk.MacroMolecule)
+                       else struct_unit_key)
+                col.update_one(key(mol), **update)
     else:
-        c = col.find(input_file['query'], no_cursor_timeout=True)
-        for match in c:
-            col.update_one({'_id': match['_id']},
-                           **input_file['update'](match, client))
+        c = col.find(globals()['query'], no_cursor_timeout=True)
+        with mp.Pool() as pool:
+            update_fn = globals()['update']
+            updates = pool.map(update_fn, c)
+        for match, update in updates:
+            col.update_one({'_id': match['_id']}, **update)
         c.close()
 
 

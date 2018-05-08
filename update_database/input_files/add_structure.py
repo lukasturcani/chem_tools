@@ -1,4 +1,4 @@
-def update(molecule, key, client):
+def update(molecule):
     """
     Crates a MongoDB document for a molecule.
 
@@ -9,12 +9,6 @@ def update(molecule, key, client):
     ----------
     molecule : :class:`stk.Molecule`
         The molecule to store in the database.
-
-    key : :class:`function`
-        Creates the key for the molecule.
-
-    client : :class:`MongoClient`
-        The database client.
 
     Returns
     -------
@@ -53,4 +47,4 @@ def update(molecule, key, client):
                                   }
                    }
                  }
-    return {'update': update, 'upsert': True}
+    return molecule, {'update': update, 'upsert': True}

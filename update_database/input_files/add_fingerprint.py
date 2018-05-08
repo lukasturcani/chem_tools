@@ -1,5 +1,6 @@
 import rdkit.Chem.AllChem as rdkit
 import itertools as it
+import pymongo
 
 query = {}
 
@@ -37,7 +38,7 @@ def cage_bb_fingerprint(mols, bits, radius):
     return full_fp
 
 
-def update(match, client):
+def update(match):
     """
     Adds fingerprints to molecule document.
 
@@ -45,9 +46,6 @@ def update(match, client):
     ----------
     match : :class:`dict`
         A molecule document from MongoDB.
-
-    client : :class:`MongoClient`
-        The database client.
 
     Returns
     -------
@@ -79,6 +77,8 @@ def update(match, client):
     cage_block = next(structure['structure'] for structure
                       in match['structures'] if
                       structure['calc_params'] == calc_params)
+
+    client = pymongo.MongoClient('mongodb://localhost:27017/')
 
     bb1_inchi = match['building_blocks'][0]['inchi']
     bb1_block = client.stk.bbs.find_one({'inchi': bb1_inchi})['structure']
@@ -117,6 +117,6 @@ def update(match, client):
 
     array_filters = [{'s.calc_params': calc_params}]
 
-    return {'update': update,
-            'upsert': True,
-            'array_filters': array_filters}
+    return match, {'update': update,
+                   'upsert': True,
+                   'array_filters': array_filters}
