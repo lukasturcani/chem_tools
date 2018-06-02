@@ -141,9 +141,9 @@ def main():
 
     client = pymongo.MongoClient(args.mongo_uri)
     col = client[args.db][args.collection]
-
+    namespace = {'client': client}.update(globals())
     with open(args.input_file, 'r') as f:
-        exec(f.read(), {'client': client}.update(globals()))
+        exec(f.read(), namespace)
 
     if args.population_files:
         with mp.Pool() as pool:
@@ -152,16 +152,16 @@ def main():
                 p.add_members(stk.Population.load(pop_file,
                                                   stk.Molecule.from_dict))
 
-            update_fn = globals()['update']
+            update_fn = namespace['update']
             updates = pool.map(update_fn, p)
             for mol, update in updates:
                 key = (macromol_key if isinstance(mol, stk.MacroMolecule)
                        else struct_unit_key)
                 col.update_one(key(mol), **update)
     else:
-        c = col.find(globals()['query'], no_cursor_timeout=True)
+        c = col.find(namespace['query'], no_cursor_timeout=True)
         with mp.Pool() as pool:
-            update_fn = globals()['update']
+            update_fn = namespace['update']
             updates = pool.map(update_fn, c)
         for match, update in updates:
             col.update_one({'_id': match['_id']}, **update)
