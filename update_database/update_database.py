@@ -6,7 +6,7 @@ Stores ``stk`` structures in a MongoDB.
 import pymongo
 import stk
 import argparse
-from collections import OrderedDict
+from collections import OrderedDict, ChainMap
 import numpy as np
 from textwrap import fill
 import multiprocessing as mp
@@ -143,7 +143,7 @@ def main():
     col = client[args.db][args.collection]
 
     with open(args.input_file, 'r') as f:
-        exec(f.read(), globals())
+        exec(f.read(), ChainMap(globals(), {'client': client}))
 
     if args.population_files:
         with mp.Pool() as pool:
