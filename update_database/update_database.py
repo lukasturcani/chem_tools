@@ -99,6 +99,50 @@ def macromol_key(molecule):
     }
 
 
+def serial_pop_update(collection, update_fn, population_files):
+    for pop_file in population_files:
+        pop = stk.Population.load(pop_file,
+                                  stk.Molecule.from_dict)
+        for mol in pop:
+            key = (macromol_key if
+                   isinstance(mol, stk.MacroMolecule) else
+                   struct_unit_key)
+            mol, update = update_fn(mol)
+            collection.update_one(key(mol), **update)
+
+
+def parallel_pop_update(collection, update_fn, population_files):
+    with mp.Pool() as pool:
+        p = stk.Population()
+        for pop_file in population_files:
+            p.add_members(
+                stk.Population.load(pop_file, stk.Molecule.from_dict))
+
+        updates = pool.map(update_fn, p)
+        for mol, update in updates:
+            key = (macromol_key if
+                   isinstance(mol, stk.MacroMolecule) else
+                   struct_unit_key)
+            collection.update_one(key(mol), **update)
+
+
+def serial_update(collection, update_fn):
+    c = collection.find(globals()['query'], no_cursor_timeout=True)
+    for match in c:
+        match, update = update_fn(match)
+        collection.update_one({'_id': match['_id']}, **update)
+    c.close()
+
+
+def parallel_update(collection, update_fn):
+    c = collection.find(globals()['query'], no_cursor_timeout=True)
+    with mp.Pool() as pool:
+        updates = pool.map(update_fn, c)
+    for match, update in updates:
+        collection.update_one({'_id': match['_id']}, **update)
+    c.close()
+
+
 def main():
     description = (
      'Updates a MongoDB.\n\n'
@@ -136,36 +180,32 @@ def main():
                         dest='population_files',
                         nargs='+',
                         help='An stk Population JSON dump file.')
+    parser.add_argument('-s', '--serial', help='Run serially.')
 
     args = parser.parse_args()
 
     client = pymongo.MongoClient(args.mongo_uri)
     col = client[args.db][args.collection]
-    namespace = {'client': client}.update(globals())
+
     with open(args.input_file, 'r') as f:
-        exec(f.read(), namespace, namespace)
+        exec(f.read(), globals())
+
+    update_fn = globals()['update']
 
     if args.population_files:
-        with mp.Pool() as pool:
-            p = stk.Population()
-            for pop_file in args.population_files:
-                p.add_members(stk.Population.load(pop_file,
-                                                  stk.Molecule.from_dict))
-
-            update_fn = namespace['update']
-            updates = pool.map(update_fn, p)
-            for mol, update in updates:
-                key = (macromol_key if isinstance(mol, stk.MacroMolecule)
-                       else struct_unit_key)
-                col.update_one(key(mol), **update)
+        if args.serial:
+            serial_pop_update(col,
+                              update_fn,
+                              args.population_files)
+        else:
+            parallel_pop_update(col,
+                                update_fn,
+                                args.population_files)
     else:
-        c = col.find(namespace['query'], no_cursor_timeout=True)
-        with mp.Pool() as pool:
-            update_fn = namespace['update']
-            updates = pool.map(update_fn, c)
-        for match, update in updates:
-            col.update_one({'_id': match['_id']}, **update)
-        c.close()
+        if args.serial:
+            serial_update(col, update_fn)
+        else:
+            parallel_update(col, update_fn)
 
 
 if __name__ == '__main__':
