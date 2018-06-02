@@ -180,7 +180,9 @@ def main():
                         dest='population_files',
                         nargs='+',
                         help='An stk Population JSON dump file.')
-    parser.add_argument('-s', '--serial', help='Run serially.')
+    parser.add_argument('-s', '--serial',
+                        help='Run serially.',
+                        action='store_true')
 
     args = parser.parse_args()
 
