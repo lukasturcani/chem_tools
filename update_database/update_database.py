@@ -99,7 +99,8 @@ def macromol_key(molecule):
     }
 
 
-def serial_pop_update(collection, update_fn, population_files):
+def serial_pop_update(collection, population_files):
+    update_fn = globals()['update']
     for pop_file in population_files:
         pop = stk.Population.load(pop_file,
                                   stk.Molecule.from_dict)
@@ -111,7 +112,8 @@ def serial_pop_update(collection, update_fn, population_files):
             collection.update_one(key(mol), **update)
 
 
-def parallel_pop_update(collection, update_fn, population_files):
+def parallel_pop_update(collection, population_files):
+    update_fn = globals()['update']
     with mp.Pool() as pool:
         p = stk.Population()
         for pop_file in population_files:
@@ -126,7 +128,8 @@ def parallel_pop_update(collection, update_fn, population_files):
             collection.update_one(key(mol), **update)
 
 
-def serial_update(collection, update_fn):
+def serial_update(collection):
+    update_fn = globals()['update']
     c = collection.find(globals()['query'], no_cursor_timeout=True)
     for match in c:
         match, update = update_fn(match)
@@ -134,7 +137,8 @@ def serial_update(collection, update_fn):
     c.close()
 
 
-def parallel_update(collection, update_fn):
+def parallel_update(collection):
+    update_fn = globals()['update']
     c = collection.find(globals()['query'], no_cursor_timeout=True)
     with mp.Pool() as pool:
         updates = pool.map(update_fn, c)
@@ -192,22 +196,16 @@ def main():
     with open(args.input_file, 'r') as f:
         exec(f.read(), globals())
 
-    update_fn = globals()['update']
-
     if args.population_files:
         if args.serial:
-            serial_pop_update(col,
-                              update_fn,
-                              args.population_files)
+            serial_pop_update(col, args.population_files)
         else:
-            parallel_pop_update(col,
-                                update_fn,
-                                args.population_files)
+            parallel_pop_update(col, args.population_files)
     else:
         if args.serial:
-            serial_update(col, update_fn)
+            serial_update(col)
         else:
-            parallel_update(col, update_fn)
+            parallel_update(col)
 
 
 if __name__ == '__main__':
