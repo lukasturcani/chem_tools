@@ -143,7 +143,7 @@ def main():
     col = client[args.db][args.collection]
     namespace = {'client': client}.update(globals())
     with open(args.input_file, 'r') as f:
-        exec(f.read(), namespace)
+        exec(f.read(), namespace, namespace)
 
     if args.population_files:
         with mp.Pool() as pool:
