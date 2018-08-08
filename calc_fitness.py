@@ -83,7 +83,7 @@ def main():
         settings = f.read()
         exec(settings, settings_namespace)
 
-    pop = Population.load(args.input_file, Molecule.fromdict)
+    pop = Population.load(args.input_file, Molecule.from_dict)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
