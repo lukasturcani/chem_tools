@@ -83,13 +83,13 @@ def main():
         settings = f.read()
         exec(settings, settings_namespace)
 
-    pop = Population.load(args.input_file, Molecule.from_dict)
     if args.dump and not os.path.exists(args.dump):
         os.mkdir(args.dump)
 
     fit_func = Guard(settings_namespace['fitness_func'], args.dump)
 
     with mp.Pool(args.num_cores) as pool:
+        pop = Population.load(args.input_file, Molecule.from_dict)
         results = pool.map(fit_func, pop)
         if args.write:
             for i, m in enumerate(results):
