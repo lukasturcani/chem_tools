@@ -17,30 +17,98 @@ logger = logging.getLogger(__name__)
 init_funcs = {'.mol': rdkit.MolFromMolFile,
               '.mol2': rdkit.MolFromMol2File}
 
+
+def update_stereochemistry(mol):
+    for atom in mol.GetAtoms():
+        atom.UpdatePropertyCache()
+    rdkit.AssignAtomChiralTagsFromStructure(mol)
+    rdkit.AssignStereochemistry(mol, True, True, True)
+
+
+def etkdg(mol, params):
+    rdkit.SanitizeMol(mol)
+    update_stereochemistry(mol)
+
+    # Give it 3D coords.
+    rdkit.EmbedMultipleConfs(mol, 100, params)
+
+    # Get rid of redundant conformers.
+    conf = mol.GetConformer(min(conf_energies(mol))[1])
+    conf = rdkit.Conformer(conf)
+    conf.SetId(0)
+    mol.RemoveAllConformers()
+    mol.AddConformer(conf)
+
+
+def mmff(mol):
+    rdkit.SanitizeMol(mol)
+    rdkit.MMFFOptimizeMolecule(mol)
+
+
+def uff(mol):
+    rdkit.SanitizeMol(mol)
+    rdkit.UFFOptimizeMolecule(mol)
+
+
+# Used to optimize constructed molecules.
+opt_fns = {
+    'uff': uff,
+    'mmff': mmff,
+    'etkdg': lambda mol: etkdg(mol, rdkit.ETKDG()),
+    'etkdg2': lambda mol: etkdg(mol, rdkit.ETKDGv2()),
+    'none': lambda mol: mol
+}
+
 # When adding new functional groups make sure that the first SMARTS
 # in the tuple begins with the atom which has a bond added when the
 # fg is being added to another molecule and the second SMARTS matches
 # the atom which gets bonded to the functional group.
-fgs = {'amine': ('[N]([H])[H]', '[$([*][N]([H])[H])]'),
-       'aldehyde': ('[C](=[O])[H]', '[$([*][C](=[O])[H])]'),
-       'carboxylic_acid': ('[C](=[O])-[O][H]',
-                           '[$([*][C](=[O])-[O][H])]'),
-       'fluorine': ('[F]', '[$([*][F])]'),
-       'chlorine': ('[Cl]', '[$([*][Cl])]'),
-       'bromine': ('[Br]', '[$([*][Br])]'),
-       'iodine': ('[I]', '[$([*][I])]'),
-       'astatine': ('[As]', '[$([*][As])]'),
-       'alcohol': ('[C]([H])([H])-[O][H]',
-                   '[$([*][C]([H])([H])-[O][H])]'),
-       'alcohol2': ('[O][H]', '[$([*][O][H])]'),
-       'alkene': ('[C]=[C]([H])[H]', '[$([*][C]=[C]([H])[H])]'),
-       'alkyne': ('[C]#[C][H]', '$([*][C]#[C][H])'),
-       'thiol': ('[S][H]', '[$([*][S][H])'),
-       'amide': ('[C](=[O])[N]([H])[H]',
-                 '[$([*][C](=[O])[N]([H])[H])]'),
-       'boronic_acid': ('[B]([O][H])[O][H]',
-                        '[$([*][B]([O][H])[O][H])]'),
-       'xenon': ('[Xe]', '[$([*][Xe])]')}
+fgs = {
+    'amine': ('[N]([H])[H]', '[$([*][N]([H])[H])]'),
+
+    'aldehyde': ('[C](=[O])[H]', '[$([*][C](=[O])[H])]'),
+
+    'carboxylic_acid': ('[C](=[O])-[O][H]',
+                        '[$([*][C](=[O])-[O][H])]'),
+
+    'fluorine': ('[F]', '[$([*][F])]'),
+
+    'chlorine': ('[Cl]', '[$([*][Cl])]'),
+
+    'bromine': ('[Br]', '[$([*][Br])]'),
+
+    'iodine': ('[I]', '[$([*][I])]'),
+
+    'astatine': ('[As]', '[$([*][As])]'),
+
+    'alcohol': ('[C]([H])([H])-[O][H]',
+                '[$([*][C]([H])([H])-[O][H])]'),
+
+    'alcohol2': ('[O][H]', '[$([*][O][H])]'),
+
+    'alkene': ('[C]=[C]([H])[H]', '[$([*][C]=[C]([H])[H])]'),
+
+    'alkyne': ('[C]#[C][H]', '$([*][C]#[C][H])'),
+
+    'thiol': ('[S][H]', '[$([*][S][H])'),
+
+    'amide': ('[C](=[O])[N]([H])[H]',
+              '[$([*][C](=[O])[N]([H])[H])]'),
+
+    'boronic_acid': ('[B]([O][H])[O][H]',
+                     '[$([*][B]([O][H])[O][H])]'),
+
+    'xenon': ('[Xe]', '[$([*][Xe])]'),
+
+    'methyl': ('[C]([H])([H])[H]', '[$([*][C]([H])([H])[H])]'),
+
+    'ethyl': ('[C]([H])([H])[C]([H])([H])[H]',
+              '[$([*])][C]([H])([H])[C]([H])([H])[H]'),
+
+    'propyl': ('[C]([H])([H])[C]([H])([H])[C]([H])([H])[H]',
+               '[$([*][C]([H])([H])[C]([H])([H])[C]([H])([H])[H])]')
+
+}
 
 
 def flatten(iterable):
@@ -83,7 +151,8 @@ def tag_fg_atoms(mol, fg):
         atom.SetProp('fg', '1')
 
     attached_mol = rdkit.MolFromSmarts(fg[1])
-    for i, idx in enumerate(flatten(mol.GetSubstructMatches(attached_mol))):
+    matches = flatten(mol.GetSubstructMatches(attached_mol))
+    for i, idx in enumerate(matches):
         atom = mol.GetAtomWithIdx(idx)
         atom.SetProp('attached', str(i))
 
@@ -140,10 +209,10 @@ def count_attached(mol):
 
     """
 
-    return sum(1 for x in mol.GetAtoms() if x.HasProp('attached'))
+    return sum(1 for a in mol.GetAtoms() if a.HasProp('attached'))
 
 
-def bond_fragments(mol, positions):
+def bond_fragments(mol):
     """
     Creates bonds beween fragments.
 
@@ -153,10 +222,6 @@ def bond_fragments(mol, positions):
     ----------
     mol : :class:`rdkit.Chem.rdchem.Mol`
         A molecule composed of fragments which are to be joined.
-
-    positions : :class:`dict`
-        Maps the id of an 'attached' atom to the position of the
-        functional group atom bonded to it.
 
     Returns
     -------
@@ -168,23 +233,15 @@ def bond_fragments(mol, positions):
     frags = list(rdkit.GetMolFrags(mol))
     main = max(frags, key=len)
     frags.remove(main)
-    attached_atoms = [x for x in main if
-                      mol.GetAtomWithIdx(x).HasProp('attached')]
+    attached_atoms = (
+        atom_id for atom_id in main
+        if mol.GetAtomWithIdx(atom_id).HasProp('attached')
+    )
     emol = rdkit.EditableMol(mol)
     for main_atom, fg in zip(attached_atoms, frags):
-        atom = mol.GetAtomWithIdx(main_atom)
-        positions[fg[0]] = positions[atom.GetProp('attached')]
         emol.AddBond(main_atom, fg[0], rdkit.BondType.SINGLE)
 
-    mol = emol.GetMol()
-
-    # For the fg atom bonded to 'attached' use the previous coordinates.
-    # This ensures stereo chemistry is the same as in the original
-    # molecule.
-    conf = mol.GetConformer()
-    for atom, *_ in frags:
-        conf.SetAtomPosition(atom, positions[atom])
-    return mol
+    return emol.GetMol()
 
 
 def conf_energies(mol):
@@ -240,6 +297,37 @@ def remake_mol(mol):
     return new_mol
 
 
+def set_position(mol, end_coord_0):
+    """
+    Shifts the position of `mol`.
+
+    `mol` is shifted so that its atom with id of ``0`` has the position
+    given by `end_coord_0`.
+
+    Parameters
+    ----------
+    mol : :class:`rdkit.Chem.rdchem.Mol`
+        A mol which is to have its position shifted.
+
+    end_coord_0 : :class:`rdkit.Point3D`
+        The target position for atom ``0`` of `mol`.
+
+    Returns
+    -------
+    None : :class:`NoneType`
+
+    """
+
+    conf = mol.GetConformer()
+    start_coord_0 = conf.GetAtomPosition(0)
+    shift = end_coord_0 - start_coord_0
+
+    for atom_id in range(mol.GetNumAtoms()):
+        start_coord = conf.GetAtomPosition(atom_id)
+        end_coord = start_coord + shift
+        conf.SetAtomPosition(atom_id, end_coord)
+
+
 def add_new_fg(mol, fg, positions):
     """
     The functional group is added to the atoms with the 'attached'
@@ -266,19 +354,17 @@ def add_new_fg(mol, fg, positions):
 
     fg = rdkit.MolFromSmarts(fg)
     fg.GetAtomWithIdx(0).SetProp('attached', '1')
-    for i in range(sum(1 for x in mol.GetAtoms() if x.HasProp('attached'))):
-        mol = rdkit.CombineMols(mol, fg)
-    return bond_fragments(mol, positions)
+    rdkit.EmbedMolecule(fg, rdkit.ETKDG())
 
-
-def update_stereochemistry(mol):
     for atom in mol.GetAtoms():
-        atom.UpdatePropertyCache()
-    rdkit.AssignAtomChiralTagsFromStructure(mol)
-    rdkit.AssignStereochemistry(mol, True, True, True)
+        if atom.HasProp('attached'):
+            set_position(fg, positions[atom.GetProp('attached')])
+            mol = rdkit.CombineMols(mol, fg)
+
+    return bond_fragments(mol)
 
 
-def change_fg(molfile, start, end, fgs):
+def change_fg(molfile, start, end, fgs, opt_fn):
     """
     Changes the functional group of a molecule.
 
@@ -296,6 +382,13 @@ def change_fg(molfile, start, end, fgs):
     fgs : :class:`dict`
         Maps names of functional groups to tuples holding SMARTS of
         atoms to be tagged.
+
+    opt_fn : :class:`str`
+        The name of the optimization function to use for the newly
+        created molecule. Can be ``'uff'`` for UFF forcefield
+        optimization, ``'mmff'`` for MMFF forcefield optimization
+        ``'etkdg'`` for ETKDG embedding, ``'etkdg2'`` for ETKDGv2
+        embedding or ``None`` for no optimization.
 
     Returns
     -------
@@ -323,23 +416,12 @@ def change_fg(molfile, start, end, fgs):
         mol = add_new_fg(mol, fgs[end][0], positions)
         # Valence is fucked up unless molecule is remade.
         mol = remake_mol(mol)
-        rdkit.SanitizeMol(mol)
-        update_stereochemistry(mol)
-
-        # Give it 3D coords.
-        rdkit.EmbedMultipleConfs(mol, 100, rdkit.ETKDG())
-
-        # Get rid of redundant conformers.
-        conf = mol.GetConformer(min(conf_energies(mol))[1])
-        conf = rdkit.Conformer(conf)
-        conf.SetId(0)
-        mol.RemoveAllConformers()
-        mol.AddConformer(conf)
+        opt_fns[opt_fn](mol)
 
         logger.debug('done')
         return os.path.splitext(os.path.basename(molfile))[0], mol
 
-    except Exception as ex:
+    except Exception:
         logger.error(f'An error occured when processing {molfile}.',
                      exc_info=True)
 
@@ -366,6 +448,12 @@ if __name__ == '__main__':
                         help=('The name of the functional group in '
                               'the output molecule.'))
 
+    parser.add_argument('-o', '--opt_fn',
+                        choices=list(opt_fns.keys()),
+                        default='none',
+                        help=('The optimization function to use on'
+                              ' the newly constructed molecule.'))
+
     parser.add_argument('-d', '--directory', action='store_true',
                         help=('If set, input_file and output_file are'
                               ' assumed to be directories holding '
@@ -389,7 +477,8 @@ if __name__ == '__main__':
         pfunc = partial(change_fg,
                         start=args.initial_fg,
                         end=args.final_fg,
-                        fgs=fgs)
+                        fgs=fgs,
+                        opt_fn=args.opt_fn)
 
         if not args.serial:
             with mp.Pool() as pool:
@@ -415,5 +504,6 @@ if __name__ == '__main__':
                             args.input_file,
                             args.initial_fg,
                             args.final_fg,
-                            fgs)
+                            fgs,
+                            args.opt_fn)
         rdkit.MolToMolFile(new_mol, args.output_file, forceV3000=True)
