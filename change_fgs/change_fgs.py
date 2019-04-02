@@ -427,7 +427,51 @@ def change_fg(molfile, start, end, fgs, opt_fn):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    usage1 = ("python change_fgs.py input_file.mol "
+              "aldehyde output_file.mol amine -o etkdg")
+
+    usage2 = ("python change_fgs.py -d input_dir "
+              "aldehyde output_dir amine -o etkdg")
+
+    description = f"""
+This program substitutes the functional groups of molecules.
+
+Examples:
+
+-----------------------------------------------------------------------
+
+    Substituting the functional groups in a single molecule.
+
+        usage: {usage1}
+
+        This substitutes every aldehyde group in input_file.mol for an
+        amine group. The resulting molecule is written to
+        output_file.mol. The \"-o etkdg\" is optional, and tells the
+        program to optimize the structure of the output molecule using
+        the ETKDG algorithm. To see other available optimization
+        methods, read the \"optional arguments\" section of this help
+        message. To see other available functional groups, see the
+        \"positional arguments\" section of this help message.
+
+-----------------------------------------------------------------------
+
+    Substituting the functional groups in all molecules in a directory.
+
+        usage: {usage2}
+
+        This looks at every .mol or .mol2 file in input_dir and
+        substitutes the aldehyde groups in each file for an amine
+        groups. This is done in parallel, unless the \"-s\" option is
+        also added. Otherwise, this example is identical to the example
+        above.
+
+-----------------------------------------------------------------------
+
+"""
+
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=description)
     parser.add_argument('input_file',
                         help=('The molecular structure file of the '
                               'input molecule. Supported file types '
