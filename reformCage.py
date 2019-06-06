@@ -35,7 +35,7 @@ name = str(args.mol_file)[0:-4]
 
 def reform_cage(result, deconstructed_topology):
   """
-  reform the unrelaxed stk cage.
+  Reform the unrelaxed stk cage.
 
   """
   building_blocks = []
@@ -66,7 +66,7 @@ def reform_cage(result, deconstructed_topology):
 
 def write_building_blocks(result):
   """
-  writes the optimised building blocks to .mol file
+  Writes the optimised building blocks to .mol file
 
   """
   wbb_count = 1
@@ -84,7 +84,7 @@ def write_building_blocks(result):
 
 def topology_calc(coordination_numbers):
   """
-  finds the topology of the system.
+  Finds the topology of the system.
 
   """
   if str(self) == '[(2, 3), (3, 2)]':
