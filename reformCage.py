@@ -26,10 +26,10 @@ parser = argparse.ArgumentParser(description='Deconstruct cage.mol file')
 parser.add_argument('mol_file')
 parser.add_argument('-c', '--reform_cage',
                     action='store_true',
-                    help=('Boolean: writes the unrelaxed cage to a .mol file.'))
+                    help=('writes unrelaxed cage.'))
 parser.add_argument('-b', '--write_building_blocks',
                     action='store_true',
-                    help=('Boolean: writes the unrelaxed building-blocks to a .mol file.'))
+                    help=('writes unrelaxed building-blocks.'))
 args = parser.parse_args()
 name = str(args.mol_file)[0:-4]
 
