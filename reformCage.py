@@ -19,7 +19,6 @@ Author: James T. Pegg
 """
 import argparse
 import stk
-import rdkit
 from rdkit.Chem import AllChem
 import operator
 
@@ -102,6 +101,8 @@ def topology_calc(self):
     return stk.ThreePlusSix()
   elif str(self) == '[(3, 12), (4, 6)]':
     return stk.SixPlusTwelve()
+  elif str(self) == '[(3, 8)]':
+    return stk.FourPlusFour()
   else:
     return 'unknown'
 
