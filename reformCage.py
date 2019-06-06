@@ -54,7 +54,6 @@ def reform_cage(result, deconstructed_topology):
         building_blocks.append(bb_su)
 
   cage = stk.Cage(building_blocks, deconstructed_topology)
-  number_of_bonds_made = cage.bonds_made
 
   cage.write(name+'-out.mol')
   cage.dump(name+'-out.json')
