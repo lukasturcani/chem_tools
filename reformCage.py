@@ -33,7 +33,7 @@ parser.add_argument('-b', '--write_building_blocks',
 args = parser.parse_args()
 name = str(args.mol_file)[0:-4]
 
-def reform_cage(self, deconstructed_topology):
+def reform_cage(result, deconstructed_topology):
   """
   reform the unrelaxed stk cage.
 
@@ -64,7 +64,7 @@ def reform_cage(self, deconstructed_topology):
   cage.dump(name+'-out.json')
   return cage
 
-def write_building_blocks(self):
+def write_building_blocks(result):
   """
   writes the optimised building blocks to .mol file
 
@@ -82,7 +82,7 @@ def write_building_blocks(self):
       bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
     wbb_count += 1
 
-def topology_calc(self):
+def topology_calc(coordination_numbers):
   """
   finds the topology of the system.
 
