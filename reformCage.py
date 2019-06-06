@@ -47,15 +47,11 @@ def reform_cage(result, deconstructed_topology):
       bb_su = stk.StructUnit3(bb_Hs, [self[k][1]])
       if bb_su not in building_blocks:
         building_blocks.append(bb_su)
-      else:
-        pass
     else:
       bb_fg = [self[k][1]]
       bb_su = stk.StructUnit2(bb_Hs, [self[k][1]])
       if bb_su not in building_blocks:
         building_blocks.append(bb_su)
-      else:
-        pass
 
   cage = stk.Cage(building_blocks, deconstructed_topology)
   number_of_bonds_made = cage.bonds_made
