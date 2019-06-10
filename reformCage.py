@@ -1,5 +1,5 @@
 """
-From a cage .mol file, returns:
+From a two-component cage .mol file, returns:
 
 	1) The SMILES code of the building blocks.
 	1.1) The active coordination number of the linkers.
