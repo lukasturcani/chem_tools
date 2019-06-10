@@ -22,17 +22,6 @@ import stk
 from rdkit.Chem import AllChem
 import operator
 
-parser = argparse.ArgumentParser(description='Deconstruct cage.mol file')
-parser.add_argument('mol_file')
-parser.add_argument('-c', '--reform_cage',
-                    action='store_true',
-                    help=('writes unrelaxed cage.'))
-parser.add_argument('-b', '--write_building_blocks',
-                    action='store_true',
-                    help=('writes unrelaxed building-blocks.'))
-args = parser.parse_args()
-name = str(args.mol_file)[0:-4]
-
 def reform_cage(result, deconstructed_topology):
   """
   Reform the unrelaxed stk cage.
@@ -101,7 +90,18 @@ def topology_calc(coordination_numbers):
   else:
     return 'unknown'
 
-def main():
+def main():	
+  parser = argparse.ArgumentParser(description='Deconstruct cage.mol file')
+  parser.add_argument('mol_file')
+  parser.add_argument('-c', '--reform_cage',
+                    action='store_true',
+                    help=('writes unrelaxed cage.'))
+  parser.add_argument('-b', '--write_building_blocks',
+                    action='store_true',
+                    help=('writes unrelaxed building-blocks.'))
+  args = parser.parse_args()
+  name = str(args.mol_file)[0:-4]
+
   mol = AllChem.MolFromMolFile(args.mol_file)
   imine = AllChem.MolFromSmiles('CC=NC')
   subs = mol.GetSubstructMatches(imine)
