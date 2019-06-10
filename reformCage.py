@@ -12,7 +12,7 @@ From a two-component cage .mol file, returns:
         3.1) Optional (-c): Reform the unrelaxed cage from .mol file.
         3.2) Optional (-b): Reform the unrelaxed building-blocks (bb).
 
-Usage: python reformCage.py <file.mol>
+Usage: $ python reformCage.py <file.mol>
 
 Author: James T. Pegg
 
@@ -24,7 +24,7 @@ import operator
 
 def reform_cage(result, deconstructed_topology):
     """
-    Reform the unrelaxed stk cage.
+    Reform the unrelaxed two-component stk cage.
 
     """
     building_blocks = []
@@ -47,6 +47,7 @@ def reform_cage(result, deconstructed_topology):
     cage.dump(name+'-out.json')
     return cage
 
+
 def write_building_blocks(result):
     """
     Writes the optimised building blocks to .mol file
@@ -64,6 +65,7 @@ def write_building_blocks(result):
             bb_su = stk.StructUnit2(bb_Hs, [self[k][1]])
             bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
         wbb_count += 1
+
 
 def topology_calc(coordination_numbers):
     """
@@ -88,6 +90,7 @@ def topology_calc(coordination_numbers):
         return stk.FourPlusFour()
     else:
         return 'unknown'
+
 
 def main():	
     parser = argparse.ArgumentParser(description='Deconstruct cage.mol file')
