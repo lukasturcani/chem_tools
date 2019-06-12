@@ -50,7 +50,7 @@ def reform_cage(result, deconstructed_topology):
 
 def write_building_blocks(result):
     """
-    Writes the optimised building blocks to .mol file
+    Writes the optimised building blocks to .mol file.
 
     """
     wbb_count = 1
