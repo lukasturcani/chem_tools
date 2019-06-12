@@ -72,24 +72,37 @@ def topology_calc(coordination_numbers):
     Finds the topology of the system.
 
     """
-    if str(self) == '[(2, 3), (3, 2)]':
+    if str(coordination_numbers) == '[(2, 3), (3, 2)]':
         return stk.TwoPlusThree()
-    elif str(self) == '[(2, 6), (3, 4)]':
+    elif str(coordination_numbers) == '[(2, 6), (3, 4)]':
         return stk.FourPlusSix()
-    elif str(self) == '[(2, 9), (3, 6)]':
+    elif str(coordination_numbers) == '[(2, 9), (3, 6)]':
         return stk.SixPlusNine()
-    elif str(self) == '[(2, 12), (3, 8)]':
+    elif str(coordination_numbers) == '[(2, 12), (3, 8)]':
         return stk.EightPlusTwelve()
-    elif str(self) == '[(3, 4), (4, 2)]':
+    elif str(coordination_numbers) == '[(3, 4), (4, 2)]':
         return stk.TwoPlusFour()
-    elif str(self) == '[(3, 6), (4, 3)]':
+    elif str(coordination_numbers) == '[(3, 6), (4, 3)]':
         return stk.ThreePlusSix()
-    elif str(self) == '[(3, 12), (4, 6)]':
+    elif str(coordination_numbers) == '[(3, 12), (4, 6)]':
         return stk.SixPlusTwelve()
-    elif str(self) == '[(3, 8)]':
+    elif str(coordination_numbers) == '[(3, 8)]':
+        return stk.FourPlusFour()
+    elif str(coordination_numbers) == '[(3, 8), (4, 6)]':
         return stk.FourPlusFour()
     else:
         return 'unknown'
+
+
+def resolve_functional_group(known_smiles, unknown_smiles, functional_group, unknown_functional_group, building_blocks_dict, smiles_fragments, uncorrected_smiles_fragments):
+    if '*' not in known_smiles:
+        unknown_group_smiles = AllChem.MolToSmiles(unknown_smiles[0])
+        unknown_group_mol = AllChem.MolFromSmiles(unknown_group_smiles)
+        functional_group_list = unknown_group_mol.GetSubstructMatches(unknown_functional_group)
+        functional_group_coordination = len(functional_group_list)
+        building_blocks_dict[known_smiles] = [functional_group_coordination, functional_group]
+        smiles_fragments.append(known_smiles)
+        uncorrected_smiles_fragments.append(unknown_group_smiles)
 
 
 def main():	
@@ -126,33 +139,18 @@ def main():
         known_aldehyde = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('C=[D1]'), AllChem.MolFromSmarts('C=O'), replaceAll=True)
         unknown_aldehyde = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('C=[D1]'), AllChem.MolFromSmarts('C=[D1]'), replaceAll=True)
         smiles_known_aldehyde = AllChem.MolToSmiles(known_aldehyde[0])
-        if '*' not in smiles_known_aldehyde:
-            smiles_unknown_aldehyde = AllChem.MolToSmiles(unknown_aldehyde[0])
-            mol_unknown_aldehyde = AllChem.MolFromSmiles(smiles_unknown_aldehyde)
-            functional_group_list = mol_unknown_aldehyde.GetSubstructMatches(unknown_functional_group)
-            functional_group_coordination = len(functional_group_list)
-            building_blocks_dict[smiles_known_aldehyde] = [functional_group_coordination, 'aldehyde']
-            smiles_fragments.append(smiles_known_aldehyde)
-            uncorrected_smiles_fragments.append(smiles_unknown_aldehyde)
+        resolve_functional_group(smiles_known_aldehyde, unknown_aldehyde, 'aldehyde', unknown_functional_group, building_blocks_dict, smiles_fragments, uncorrected_smiles_fragments)
 
-        else:
-            known_amine = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('N=[D1]'), AllChem.MolFromSmarts('N'), replaceAll=True)
-            unknown_amine = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('N=[D1]'), AllChem.MolFromSmarts('[D1]'), replaceAll=True)
-            smiles_known_amine = AllChem.MolToSmiles(known_amine[0])
-            if '*' not in smiles_known_amine:
-                smiles_unknown_amine = AllChem.MolToSmiles(unknown_amine[0])
-                mol_unknown_amine = AllChem.MolFromSmiles(smiles_unknown_amine)
-                functional_group_list = mol_unknown_amine.GetSubstructMatches(unknown_functional_group)
-                functional_group_coordination = len(functional_group_list)
-                building_blocks_dict[smiles_known_amine] = [functional_group_coordination, 'amine']
-                smiles_fragments.append(smiles_known_amine)
-                uncorrected_smiles_fragments.append(smiles_unknown_amine)
+        known_amine = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('N=[D1]'), AllChem.MolFromSmarts('N'), replaceAll=True)
+        unknown_amine = AllChem.ReplaceSubstructs(AllChem.MolFromSmiles(str(i)), AllChem.MolFromSmarts('N=[D1]'), AllChem.MolFromSmarts('[D1]'), replaceAll=True)
+        smiles_known_amine = AllChem.MolToSmiles(known_amine[0])
+        resolve_functional_group(smiles_known_amine, unknown_amine, 'amine', unknown_functional_group, building_blocks_dict, smiles_fragments, uncorrected_smiles_fragments)
 
     number_of_groups = []
     for i in uncorrected_smiles_fragments:
         a = AllChem.MolFromSmiles(i)
         b = a.GetSubstructMatches(unknown_functional_group)
-    number_of_groups.append(len(b))
+        number_of_groups.append(len(b))
     number_of_groups_dict = {i:number_of_groups.count(i) for i in number_of_groups}
     coordination_numbers = sorted(number_of_groups_dict.items(), key=operator.itemgetter(0))
 
@@ -165,9 +163,10 @@ def main():
 
     if args.reform_cage == True:
         if len(result.keys()) == 2:
-        cage = reform_cage(result, deconstructed_topology)
-    else:
-        print('Error: Three-Component Cage')
+            cage = reform_cage(result, deconstructed_topology)
+        else:
+            print('Error: Three-Component Cage')
+
     if args.write_building_blocks == True:
         write_building_blocks(result)
 
