@@ -32,13 +32,13 @@ def reform_cage(result, deconstructed_topology):
       bb_mol = AllChem.MolFromSmiles(k)
       bb_Hs = AllChem.AddHs(bb_mol)
       AllChem.EmbedMolecule(bb_Hs)
-      if self[k][0] >= 3:
-          bb_su = stk.StructUnit3(bb_Hs, [self[k][1]])
+      if result[k][0] >= 3:
+          bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
           if bb_su not in building_blocks:
               building_blocks.append(bb_su)
       else:
-          bb_fg = [self[k][1]]
-          bb_su = stk.StructUnit2(bb_Hs, [self[k][1]])
+          bb_fg = [result[k][1]]
+          bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
           if bb_su not in building_blocks:
               building_blocks.append(bb_su)
 
