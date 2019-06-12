@@ -22,7 +22,7 @@ import stk
 from rdkit.Chem import AllChem
 import operator
 
-def reform_cage(result, deconstructed_topology):
+def reform_cage(name, result, deconstructed_topology):
     """
     Reform the unrelaxed two-component stk cage.
 
@@ -48,7 +48,7 @@ def reform_cage(result, deconstructed_topology):
     return cage
 
 
-def write_building_blocks(result):
+def write_building_blocks(name, result):
     """
     Writes the optimised building blocks to .mol file.
 
@@ -58,11 +58,11 @@ def write_building_blocks(result):
         bb_mol = AllChem.MolFromSmiles(k)
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
-        if self[k][0] >= 3:
-            bb_su = stk.StructUnit3(bb_Hs, [self[k][1]])
+        if result[k][0] >= 3:
+            bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
             bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
         else:
-            bb_su = stk.StructUnit2(bb_Hs, [self[k][1]])
+            bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
             bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
         wbb_count += 1
 
@@ -163,12 +163,12 @@ def main():
 
     if args.reform_cage == True:
         if len(result.keys()) == 2:
-            cage = reform_cage(result, deconstructed_topology)
+            cage = reform_cage(name, result, deconstructed_topology)
         else:
             print('Error: Three-Component Cage')
 
     if args.write_building_blocks == True:
-        write_building_blocks(result)
+        write_building_blocks(name, result)
 
 if __name__ == '__main__':
   main()
