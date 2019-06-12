@@ -12,7 +12,7 @@ From a two-component cage .mol file, returns:
         3.1) Optional (-c): Reform the unrelaxed cage from .mol file.
         3.2) Optional (-b): Reform the unrelaxed building-blocks (bb).
 
-Usage: $ python reformCage.py <file.mol>
+Usage: $ python reform_cage.py <file.mol>
 
 Author: James T. Pegg
 
