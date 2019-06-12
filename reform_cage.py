@@ -21,6 +21,7 @@ import argparse
 import stk
 from rdkit.Chem import AllChem
 import operator
+import os
 
 def reform_cage(name, result, deconstructed_topology):
     """
@@ -53,6 +54,7 @@ def write_building_blocks(name, result):
     Writes the optimised building blocks to .mol file.
 
     """
+    os.mkdir('BuildingBlocks')
     wbb_count = 1
     for k in result:
         bb_mol = AllChem.MolFromSmiles(k)
@@ -60,10 +62,10 @@ def write_building_blocks(name, result):
         AllChem.EmbedMolecule(bb_Hs)
         if result[k][0] >= 3:
             bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
-            bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
+            bb_su.write('BuildingBlocks/'+name+'-'+str(wbb_count)+'bb.mol')
         else:
             bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
-            bb_su.write(name+'-'+str(wbb_count)+'bb.mol')
+            bb_su.write('BuildingBlocks/'+name+'-'+str(wbb_count)+'bb.mol')
         wbb_count += 1
 
 
