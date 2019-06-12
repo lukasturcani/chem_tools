@@ -28,7 +28,7 @@ def reform_cage(result, deconstructed_topology):
 
     """
     building_blocks = []
-    for k in self:
+    for k in result:
       bb_mol = AllChem.MolFromSmiles(k)
       bb_Hs = AllChem.AddHs(bb_mol)
       AllChem.EmbedMolecule(bb_Hs)
@@ -54,7 +54,7 @@ def write_building_blocks(result):
 
     """
     wbb_count = 1
-    for k in self:
+    for k in result:
         bb_mol = AllChem.MolFromSmiles(k)
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
