@@ -206,7 +206,8 @@ def main():
     bonds = []
     for i in subs:
         bonds.append(i[1:3])
-    bond_ids = [mol.GetBondBetweenAtoms(x, y).GetIdx() for x, y in bonds]
+    bond_ids = [mol.GetBondBetweenAtoms(x, y).
+                GetIdx() for x, y in bonds]
     new_mol = AllChem.FragmentOnBonds(mol, bond_ids)
 
     new_smiles = AllChem.MolToSmiles(new_mol, True)
