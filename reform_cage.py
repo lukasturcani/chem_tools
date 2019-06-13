@@ -231,13 +231,13 @@ def main():
             replaceAll=True)
         smiles_known_aldehyde = AllChem.MolToSmiles(known_aldehyde[0])
         resolve_functional_group(
-            smiles_known_aldehyde,
-            unknown_aldehyde,
-            'aldehyde',
-            unknown_functional_group,
-            building_blocks_dict,
-            smiles_fragments,
-            uncorrected_smiles_fragments)
+            known_smiles=smiles_known_aldehyde,
+            unknown_smiles=unknown_aldehyde,
+            functional_group='aldehyde',
+            unknown_functional_group=unknown_functional_group,
+            building_blocks_dict=building_blocks_dict,
+            smiles_fragments=smiles_fragments,
+            uncorrected_smiles_fragments=uncorrected_smiles_fragments)
 
         known_amine = AllChem.ReplaceSubstructs(
             mol=AllChem.MolFromSmiles(str(i)),
@@ -251,13 +251,13 @@ def main():
             replaceAll=True)
         smiles_known_amine = AllChem.MolToSmiles(known_amine[0])
         resolve_functional_group(
-            smiles_known_amine,
-            unknown_amine,
-            'amine',
-            unknown_functional_group,
-            building_blocks_dict,
-            smiles_fragments,
-            uncorrected_smiles_fragments)
+            known_smiles=smiles_known_amine,
+            unknown_smiles=unknown_amine,
+            functional_group='amine',
+            unknown_functional_group=unknown_functional_group,
+            building_blocks_dict=building_blocks_dict,
+            smiles_fragments=smiles_fragments,
+            uncorrected_smiles_fragments=uncorrected_smiles_fragments)
 
     # Collates information.
     number_of_groups = []
