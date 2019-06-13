@@ -33,7 +33,7 @@ import os
 def reform_cage(name, result, deconstructed_topology):
     """
     Reform the unrelaxed two-component stk cage and
-    writes to a `.mol` and `.json` file.
+    write to a `.mol` and `.json` file.
 
     """
 
