@@ -118,6 +118,16 @@ def topology_calc(coordination_numbers):
     -------
     The topology of the cage given by `stk`.
 
+    Example
+    -------
+    The numbers in the list ``[(2, 6), (3, 4)]`` denote:
+
+        (2 = A ditopic building-block.
+        6 = The number of times the ditopic building_block occurs.)
+
+        (3 = A tritopic building-block.
+        4 = The number of times the tritopic building_block occurs.)
+
     """
 
     if coordination_numbers == [(2, 3), (3, 2)]:
