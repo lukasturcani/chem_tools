@@ -6,9 +6,9 @@ a ``.mol`` file.
 The script returns:
     1) A dictionary containing:
         Key) The SMILES code of the building blocks.
-        Value-1) The active coordination number of the linkers.
+        Value-1) The coordination number of the linkers.
         Value-2) The active functional group.
-        Value-3) Times a building block has been used in a cage.
+        Value-3) Times a building-block has been used in a cage.
 
     2) The topology of the cage.
 
