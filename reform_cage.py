@@ -15,9 +15,9 @@ The script returns:
         3.1) Optional (-c): Reform the unrelaxed cage from .mol file.
         3.2) Optional (-b): Reform the unrelaxed building-blocks (bb).
 
-To run this file::
+This script is run as a command line program. See:
 
-    $ python reform_cage.py <file.mol>
+    $ python reform_cage.py <file.mol> --help
 
 Author: James T. Pegg
 
