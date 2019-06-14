@@ -321,7 +321,7 @@ def main():
             cage.write(name + '-out.mol')
             cage.dump(name + '-out.json')
         else:
-            print('Error: Three-Component Cage')
+            raise Exception('Error: Three-Component Cage')
 
     if args.write_building_blocks:
         write_building_blocks(name, building_blocks)
