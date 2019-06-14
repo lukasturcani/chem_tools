@@ -293,7 +293,7 @@ def main():
             uncorrected_smiles_fragments=uncorrected_smiles_fragments
         )
 
-    # Collates information.
+    # Collect information.
     number_of_groups = []
     for i in uncorrected_smiles_fragments:
         a = AllChem.MolFromSmiles(i)
@@ -311,7 +311,7 @@ def main():
                        for key, value in building_blocks_dict.items()}
     deconstructed_topology = topology_calc(coordination_numbers)
 
-    # Generates the output.
+    # Prints the output.
     print(building_blocks)
     print(deconstructed_topology)
 
