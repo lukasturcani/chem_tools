@@ -3,11 +3,12 @@ This script uses ``stk`` and ``rdkit`` to find the building-blocks
 and topology of a two-component cage molecule held within
 a ``.mol`` file.
 
-The script returns:
-    1) The SMILES code of the building blocks.
-    1.1) The active coordination number of the linkers.
-    1.2) The active functional group.
-    1.3) Times a building block has been used in a cage.
+The script returns: 
+    1) A dictionary containing:
+        Key) The SMILES code of the building blocks.
+        Value-1) The active coordination number of the linkers.
+        Value-2) The active functional group.
+        Value-3) Times a building block has been used in a cage.
 
     2) The topology of the cage.
 
