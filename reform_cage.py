@@ -3,7 +3,7 @@ This script uses ``stk`` and ``rdkit`` to find the building-blocks
 and topology of a two-component cage molecule held within
 a ``.mol`` file.
 
-The script returns: 
+The script returns:
     1) A dictionary containing:
         Key) The SMILES code of the building blocks.
         Value-1) The active coordination number of the linkers.
@@ -31,24 +31,35 @@ import operator
 import os
 
 
-def reform_cage(name, result, deconstructed_topology):
+def reform_cage(name, building_blocks, deconstructed_topology):
     """
     Reform the unrelaxed cage and write to file.
+
+    Parameters
+    ----------
+    name : :class:`str`
+        The name of the molecule.
+
+    building_blocks_dict : :class:`dict`
+        A dictionary containing information on the building blocks.
+
+    deconstructed_topology : :class: ``
+        The topology of the molecule.
 
     """
 
     building_blocks_list = []
-    for k in result:
+    for k in building_blocks:
         bb_mol = AllChem.MolFromSmiles(k)
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
-        if result[k][0] >= 3:
-            bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
+        if building_blocks[k][0] >= 3:
+            bb_su = stk.StructUnit3(bb_Hs, [building_blocks[k][1]])
             if bb_su not in building_blocks:
                 building_blocks_list.append(bb_su)
         else:
-            bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
-            if bb_su not in building_blocks:
+            bb_su = stk.StructUnit2(bb_Hs, [building_blocks[k][1]])
+            if bb_su not in building_blocks_list:
                 building_blocks_list.append(bb_su)
 
     cage = stk.Cage(building_blocks_list, deconstructed_topology)
@@ -56,36 +67,38 @@ def reform_cage(name, result, deconstructed_topology):
     return cage
 
 
-def write_building_blocks(name, result):
+def write_building_blocks(name, building_blocks):
     """
-    Writes the optimised building blocks to `.mol` file.
+    Writes the optimised building blocks to ``.mol`` file.
 
     Parameters
     ----------
     name : :class:`str`
         The name of the molecule.
-    result : :class:`dict`
-        A dictionary containing information on the building blocks.
+
+    building_blocks : :class:`dict`
+        A dictionary containing the building blocks.
 
     Returns
     -------
-        None: :class:`NoneType`
+    None: :class:`NoneType`
+
     """
 
     # Create a dictionary to hold the building blocks.
     os.mkdir('BuildingBlocks')
     # Populates the `BuildingBlocks` dictionary.
     wbb_count = 1
-    for k in result:
+    for k in building_blocks:
         bb_mol = AllChem.MolFromSmiles(k)
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
-        if result[k][0] >= 3:
-            bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
+        if building_blocks[k][0] >= 3:
+            bb_su = stk.StructUnit3(bb_Hs, [building_blocks[k][1]])
             bb_su.write('BuildingBlocks/' + name +
                         '-' + str(wbb_count) + 'bb.mol')
         else:
-            bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
+            bb_su = stk.StructUnit2(bb_Hs, [building_blocks[k][1]])
             bb_su.write('BuildingBlocks/' + name +
                         '-' + str(wbb_count) + 'bb.mol')
         wbb_count += 1
@@ -107,26 +120,26 @@ def topology_calc(coordination_numbers):
 
     """
 
-    if str(coordination_numbers) == '[(2, 3), (3, 2)]':
+    if coordination_numbers == [(2, 3), (3, 2)]:
         return stk.TwoPlusThree()
-    elif str(coordination_numbers) == '[(2, 6), (3, 4)]':
+    elif coordination_numbers == [(2, 6), (3, 4)]:
         return stk.FourPlusSix()
-    elif str(coordination_numbers) == '[(2, 9), (3, 6)]':
+    elif coordination_numbers == [(2, 9), (3, 6)]:
         return stk.SixPlusNine()
-    elif str(coordination_numbers) == '[(2, 12), (3, 8)]':
+    elif coordination_numbers == [(2, 12), (3, 8)]:
         return stk.EightPlusTwelve()
-    elif str(coordination_numbers) == '[(3, 4), (4, 2)]':
+    elif coordination_numbers == [(3, 4), (4, 2)]:
         return stk.TwoPlusFour()
-    elif str(coordination_numbers) == '[(3, 6), (4, 3)]':
+    elif coordination_numbers == [(3, 6), (4, 3)]:
         return stk.ThreePlusSix()
-    elif str(coordination_numbers) == '[(3, 12), (4, 6)]':
+    elif coordination_numbers == [(3, 12), (4, 6)]:
         return stk.SixPlusTwelve()
-    elif str(coordination_numbers) == '[(3, 8)]':
+    elif coordination_numbers == [(3, 8)]:
         return stk.FourPlusFour()
-    elif str(coordination_numbers) == '[(3, 8), (4, 6)]':
+    elif coordination_numbers == [(3, 8), (4, 6)]:
         return stk.FourPlusFour()
     else:
-        return 'unknown'
+        return None
 
 
 def resolve_functional_group(known_smiles,
@@ -143,18 +156,24 @@ def resolve_functional_group(known_smiles,
     ----------
     known_smiles : :class:`str`
         The smiles of the resolved building block.
+
     unknown_smiles : :class:`tuple`
         The smiles of the un-resolved building block analogue.
+
     functional_group : :class:`str`
         The functional group of the building block involved in iminie
         bond formation.
+
     unknown_functional_group : :class:`rdkit.Chem.rdchem.Mol`
         An unknown `[*]` rdkit mol object needed
         for substructure searches.
+
     building_blocks_dict : :class:`dict`
         A dictionary containing information on the building blocks.
+
     smiles_fragments : :class:`list`
         A list containing all the corrected building blocks.
+
     uncorrected_smiles_fragments : :class:`list`
         A list containing all the uncorrected building blocks.
 
@@ -222,12 +241,14 @@ def main():
             mol=AllChem.MolFromSmiles(str(i)),
             query=AllChem.MolFromSmarts('C=[D1]'),
             replacement=AllChem.MolFromSmarts('C=O'),
-            replaceAll=True)
+            replaceAll=True
+        )
         unknown_aldehyde = AllChem.ReplaceSubstructs(
             mol=AllChem.MolFromSmiles(str(i)),
             query=AllChem.MolFromSmarts('C=[D1]'),
             replacement=AllChem.MolFromSmarts('C=[D1]'),
-            replaceAll=True)
+            replaceAll=True
+        )
         smiles_known_aldehyde = AllChem.MolToSmiles(known_aldehyde[0])
         resolve_functional_group(
             known_smiles=smiles_known_aldehyde,
@@ -236,18 +257,21 @@ def main():
             unknown_functional_group=unknown_functional_group,
             building_blocks_dict=building_blocks_dict,
             smiles_fragments=smiles_fragments,
-            uncorrected_smiles_fragments=uncorrected_smiles_fragments)
+            uncorrected_smiles_fragments=uncorrected_smiles_fragments
+        )
 
         known_amine = AllChem.ReplaceSubstructs(
             mol=AllChem.MolFromSmiles(str(i)),
             query=AllChem.MolFromSmarts('N=[D1]'),
             replacement=AllChem.MolFromSmarts('N'),
-            replaceAll=True)
+            replaceAll=True
+        )
         unknown_amine = AllChem.ReplaceSubstructs(
             mol=AllChem.MolFromSmiles(str(i)),
             query=AllChem.MolFromSmarts('N=[D1]'),
             replacement=AllChem.MolFromSmarts('[D1]'),
-            replaceAll=True)
+            replaceAll=True
+        )
         smiles_known_amine = AllChem.MolToSmiles(known_amine[0])
         resolve_functional_group(
             known_smiles=smiles_known_amine,
@@ -256,7 +280,8 @@ def main():
             unknown_functional_group=unknown_functional_group,
             building_blocks_dict=building_blocks_dict,
             smiles_fragments=smiles_fragments,
-            uncorrected_smiles_fragments=uncorrected_smiles_fragments)
+            uncorrected_smiles_fragments=uncorrected_smiles_fragments
+        )
 
     # Collates information.
     number_of_groups = []
@@ -273,23 +298,23 @@ def main():
     smiles_fragments_number = {
         i: smiles_fragments.count(i) for i in smiles_fragments}
     building_blocks = {key: value + [smiles_fragments_number[key]]
-              for key, value in building_blocks_dict.items()}
+                       for key, value in building_blocks_dict.items()}
     deconstructed_topology = topology_calc(coordination_numbers)
 
     # Generates the output.
     print(building_blocks)
     print(deconstructed_topology)
 
-    if args.reform_cage is True:
-        if len(result.keys()) == 2:
-            reform_cage(name, result, deconstructed_topology)
+    if args.reform_cage:
+        if len(building_blocks.keys()) == 2:
+            cage = reform_cage(name, building_blocks, deconstructed_topology)
             cage.write(name + '-out.mol')
             cage.dump(name + '-out.json')
         else:
             print('Error: Three-Component Cage')
 
-    if args.write_building_blocks is True:
-        write_building_blocks(name, result)
+    if args.write_building_blocks:
+        write_building_blocks(name, building_blocks)
 
 
 if __name__ == '__main__':
