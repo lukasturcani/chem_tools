@@ -32,8 +32,7 @@ import os
 
 def reform_cage(name, result, deconstructed_topology):
     """
-    Reform the unrelaxed two-component stk cage and
-    write to a `.mol` and `.json` file.
+    Reform the unrelaxed cage and write to file.
 
     """
 
@@ -138,9 +137,7 @@ def resolve_functional_group(known_smiles,
                              smiles_fragments,
                              uncorrected_smiles_fragments):
     """
-    Populates the `building_blocks_dict` dictionary.
-    Populates the `smiles_fragments` list.
-    Populates the `uncorrected_smiles_fragments` list.
+    Edits molecules based on functional group.
 
     Parameters
     ----------
