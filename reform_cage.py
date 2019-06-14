@@ -36,7 +36,7 @@ def reform_cage(name, result, deconstructed_topology):
 
     """
 
-    building_blocks = []
+    building_blocks_list = []
     for k in result:
         bb_mol = AllChem.MolFromSmiles(k)
         bb_Hs = AllChem.AddHs(bb_mol)
@@ -44,15 +44,14 @@ def reform_cage(name, result, deconstructed_topology):
         if result[k][0] >= 3:
             bb_su = stk.StructUnit3(bb_Hs, [result[k][1]])
             if bb_su not in building_blocks:
-                building_blocks.append(bb_su)
+                building_blocks_list.append(bb_su)
         else:
             bb_su = stk.StructUnit2(bb_Hs, [result[k][1]])
             if bb_su not in building_blocks:
-                building_blocks.append(bb_su)
+                building_blocks_list.append(bb_su)
 
-    cage = stk.Cage(building_blocks, deconstructed_topology)
-    cage.write(name+'-out.mol')
-    cage.dump(name+'-out.json')
+    cage = stk.Cage(building_blocks_list, deconstructed_topology)
+
     return cage
 
 
@@ -272,17 +271,19 @@ def main():
 
     smiles_fragments_number = {
         i: smiles_fragments.count(i) for i in smiles_fragments}
-    result = {key: value + [smiles_fragments_number[key]]
+    building_blocks = {key: value + [smiles_fragments_number[key]]
               for key, value in building_blocks_dict.items()}
     deconstructed_topology = topology_calc(coordination_numbers)
 
     # Generates the output.
-    print(result)
+    print(building_blocks)
     print(deconstructed_topology)
 
     if args.reform_cage is True:
         if len(result.keys()) == 2:
             reform_cage(name, result, deconstructed_topology)
+            cage.write(name + '-out.mol')
+            cage.dump(name + '-out.json')
         else:
             print('Error: Three-Component Cage')
 
