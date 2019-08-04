@@ -36,16 +36,6 @@ def main():
         smiles='c1c(C=O)cc(C=O)cc1C=O',
         functional_groups=['aldehyde']
     )
-    # aldehyde3 = stk.BuildingBlock(
-    #     smiles='c1c(N)cc(C=O)cc1C=O',
-    #     functional_groups=['amine', 'aldehyde']
-    # )
-    # fg0 = next(
-    #     fg for fg in aldehyde3.func_groups
-    #     if fg.fg_type.name == 'aldehyde'
-    # )
-    # rest = [fg for fg in aldehyde3.func_groups if fg is not fg0]
-    # aldehyde3.func_groups = (fg0, *rest)
 
     amine4 = stk.BuildingBlock(
         smiles='c1c(N)c(N)cc(N)c1N',
