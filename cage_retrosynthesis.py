@@ -147,7 +147,7 @@ def topology_calc(coordination_numbers):
     elif coordination_numbers == [(3, 8)]:
         return stk.FourPlusFour()
     elif coordination_numbers == [(3, 8), (4, 6)]:
-        return stk.FourPlusFour()
+        return stk.SixPlusEight()
     else:
         return None
 
