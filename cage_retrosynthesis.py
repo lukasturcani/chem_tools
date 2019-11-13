@@ -131,23 +131,23 @@ def topology_calc(coordination_numbers):
     """
 
     if coordination_numbers == [(2, 3), (3, 2)]:
-        return stk.TwoPlusThree()
+        return stk.cage.TwoPlusThree()
     elif coordination_numbers == [(2, 6), (3, 4)]:
-        return stk.FourPlusSix()
+        return stk.cage.FourPlusSix()
     elif coordination_numbers == [(2, 9), (3, 6)]:
-        return stk.SixPlusNine()
+        return stk.cage.SixPlusNine()
     elif coordination_numbers == [(2, 12), (3, 8)]:
-        return stk.EightPlusTwelve()
+        return stk.cage.EightPlusTwelve()
     elif coordination_numbers == [(2, 4), (4, 2)]:
-        return stk.TwoPlusFour()
+        return stk.cage.TwoPlusFour()
     elif coordination_numbers == [(2, 6), (4, 3)]:
-        return stk.ThreePlusSix()
+        return stk.cage.ThreePlusSix()
     elif coordination_numbers == [(2, 12), (4, 6)]:
-        return stk.SixPlusTwelve()
+        return stk.cage.SixPlusTwelve()
     elif coordination_numbers == [(3, 8)]:
-        return stk.FourPlusFour()
+        return stk.cage.FourPlusFour()
     elif coordination_numbers == [(3, 8), (4, 6)]:
-        return stk.SixPlusEight()
+        return stk.cage.SixPlusEight()
     else:
         return None
 
