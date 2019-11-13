@@ -138,11 +138,11 @@ def topology_calc(coordination_numbers):
         return stk.SixPlusNine()
     elif coordination_numbers == [(2, 12), (3, 8)]:
         return stk.EightPlusTwelve()
-    elif coordination_numbers == [(3, 4), (4, 2)]:
+    elif coordination_numbers == [(2, 4), (4, 2)]:
         return stk.TwoPlusFour()
     elif coordination_numbers == [(2, 6), (4, 3)]:
         return stk.ThreePlusSix()
-    elif coordination_numbers == [(3, 12), (4, 6)]:
+    elif coordination_numbers == [(2, 12), (4, 6)]:
         return stk.SixPlusTwelve()
     elif coordination_numbers == [(3, 8)]:
         return stk.FourPlusFour()
