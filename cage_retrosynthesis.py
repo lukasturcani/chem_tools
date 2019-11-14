@@ -1,27 +1,21 @@
 """
-This script uses ``stk`` and ``rdkit`` to find the building-blocks
+This code uses ``stk`` and ``rdkit`` to find the building-blocks
 and topology of a two-component cage molecule held within
 a ``.mol`` file.
-
 The script returns:
     1) A dictionary containing:
         Key) The SMILES code of the building blocks.
         Value-1) The coordination number of the linkers.
         Value-2) The active functional group.
         Value-3) Times a building-block has been used in a cage.
-
     2) The topology of the cage.
-
     3) Optional Arguments.
-        3.1) Optional (-c): Reform the unrelaxed cage from .mol file.
+        3.1) Optional (-c): Calculates the building-block centroids.
+        3.2) Optional (-r): Reform the unrelaxed cage from .mol file.
         3.2) Optional (-b): Reform the unrelaxed building-blocks (bb).
-
 This script is run as a command line program. See:
-
     $ python reform_cage.py <file.mol> --help
-
 Author: James T. Pegg
-
 """
 
 import argparse
@@ -29,23 +23,63 @@ import stk
 from rdkit.Chem import AllChem
 import operator
 import os
+import numpy as np
+
+
+def building_block_centroid(new_mol,
+                            uncorrected_smiles_fragments):
+    """
+    Calculates the centorid of the building-blocks.
+    Returns
+    -------
+    node_centroid, link_centroid : :class:`list`
+    """
+    conf = new_mol.GetConformer()
+    uncorrected_smiles_fragments_number = {
+        i: uncorrected_smiles_fragments.count(i) for i in uncorrected_smiles_fragments}
+
+    node_centroid = []
+    link_centroid = []
+    number_of_nodes = min(uncorrected_smiles_fragments_number.values())
+    number_of_links = max(uncorrected_smiles_fragments_number.values())
+    for key in uncorrected_smiles_fragments_number:
+        fragment = AllChem.MolFromSmarts(key)
+        fragment_matches = new_mol.GetSubstructMatches(fragment)
+        if uncorrected_smiles_fragments_number[key] == number_of_nodes:
+            for f in fragment_matches:
+                node_data = []
+                for i in f:
+                    node_data.append(list(conf.GetAtomPosition(i)))
+                node_array = np.array(node_data)
+                centroid = np.mean(node_array[:,-3:], axis=0)
+                node_centroid.append(centroid)
+        if uncorrected_smiles_fragments_number[key] == number_of_links:
+            for f in fragment_matches:
+                link_data = []
+                for i in f:
+                    link_data.append(list(conf.GetAtomPosition(i)))
+                link_array = np.array(link_data)
+                centroid = np.mean(link_array[:,-3:], axis=0)
+                link_centroid.append(centroid)
+
+    return node_centroid, link_centroid
 
 
 def reform_cage(name, building_blocks, deconstructed_topology):
     """
     Reform the unrelaxed cage and write to file.
-
     Parameters
     ----------
     name : :class:`str`
         The name of the molecule.
-
     building_blocks_dict : :class:`dict`
         A dictionary containing information on the building blocks.
-
     deconstructed_topology : :class: ``
         The topology of the molecule.
-
+    Returns
+    -------
+    cage: :class: ConstructedMolecule
+        The re-constructed molecule.
     """
 
     building_blocks_list = []
@@ -70,19 +104,15 @@ def reform_cage(name, building_blocks, deconstructed_topology):
 def write_building_blocks(name, building_blocks):
     """
     Writes the optimised building blocks to ``.mol`` file.
-
     Parameters
     ----------
     name : :class:`str`
         The name of the molecule.
-
     building_blocks : :class:`dict`
         A dictionary containing the building blocks.
-
     Returns
     -------
     None: :class:`NoneType`
-
     """
 
     # Create a dictionary to hold the building blocks.
@@ -107,27 +137,21 @@ def write_building_blocks(name, building_blocks):
 def topology_calc(coordination_numbers):
     """
     Finds the topology of the system.
-
     Parameters
     ----------
     coordination_numbers : :class:`list`
         The number of times a ditopic, tritopic, or quadtopic
         building block occurs.
-
     Returns
     -------
     The topology of the cage given by `stk`.
-
     Example
     -------
     The numbers in the list ``[(2, 6), (3, 4)]`` denote:
-
         (2 = A ditopic building-block.
-        6 = The number of times the ditopic building_block occurs.)
-
+         6 = The number of times the ditopic building_block occurs.)
         (3 = A tritopic building-block.
-        4 = The number of times the tritopic building_block occurs.)
-
+         4 = The number of times the tritopic building_block occurs.)
     """
 
     if coordination_numbers == [(2, 3), (3, 2)]:
@@ -161,37 +185,27 @@ def resolve_functional_group(known_smiles,
                              uncorrected_smiles_fragments):
     """
     Edits molecules based on functional group.
-
     Parameters
     ----------
     known_smiles : :class:`str`
         The smiles of the resolved building block.
-
     unknown_smiles : :class:`tuple`
         The smiles of the un-resolved building block analogue.
-
     functional_group : :class:`str`
         The functional group of the building block involved in iminie
         bond formation.
-
     unknown_functional_group : :class:`rdkit.Chem.rdchem.Mol`
         An unknown `[*]` rdkit mol object needed
         for substructure searches.
-
     building_blocks_dict : :class:`dict`
         A dictionary containing information on the building blocks.
-
     smiles_fragments : :class:`list`
         A list containing all the corrected building blocks.
-
     uncorrected_smiles_fragments : :class:`list`
         A list containing all the uncorrected building blocks.
-
-
     Returns
     -------
     None : :class:`NoneType`
-
     """
 
     if '*' not in known_smiles:
@@ -211,7 +225,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('mol_file')
     parser.add_argument(
-            '-c', '--reform_cage',
+            '-c', '--centroid',
+            action='store_true',
+            help=('calculates building-block centroids.')) 
+    parser.add_argument(
+            '-r', '--reform_cage',
             action='store_true',
             help=('writes unrelaxed cage.'))
 
@@ -312,8 +330,23 @@ def main():
     deconstructed_topology = topology_calc(coordination_numbers)
 
     # Prints the output.
+    print('____Building-Blocks____')
     print(building_blocks)
+    print()
+    print('____Topology____')
     print(deconstructed_topology)
+    print()
+
+    if args.centroid:
+        node_centroid, link_centroid = building_block_centroid(
+            new_mol=new_mol,
+            uncorrected_smiles_fragments=uncorrected_smiles_fragments
+        )
+        print('____Node Centroids____')
+        print(node_centroid)
+        print()
+        print('____Link Centroids____')
+        print(link_centroid)
 
     if args.reform_cage:
         if len(building_blocks.keys()) == 2:
