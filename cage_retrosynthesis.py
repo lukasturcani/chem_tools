@@ -35,9 +35,11 @@ def building_block_centroid(new_mol,
                             uncorrected_smiles_fragments):
     """
     Calculates the centorid of the building-blocks.
+
     Returns
     -------
     node_centroid, link_centroid : :class:`list`
+
     """
     conf = new_mol.GetConformer()
     uncorrected_smiles_fragments_number = {
@@ -71,6 +73,7 @@ def building_block_centroid(new_mol,
 
 
 def reform_cage(name, building_blocks, deconstructed_topology):
+
     """
     Reform the unrelaxed cage and write to file.
 
@@ -110,6 +113,7 @@ def reform_cage(name, building_blocks, deconstructed_topology):
 
 
 def write_building_blocks(name, building_blocks):
+
     """
     Writes the optimised building blocks to ``.mol`` file.
 
@@ -146,6 +150,7 @@ def write_building_blocks(name, building_blocks):
 
 
 def topology_calc(coordination_numbers):
+
     """
     Finds the topology of the system.
 
