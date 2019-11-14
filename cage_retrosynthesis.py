@@ -2,6 +2,7 @@
 This code uses ``stk`` and ``rdkit`` to find the building-blocks
 and topology of a two-component cage molecule held within
 a ``.mol`` file.
+
 The script returns:
     1) A dictionary containing:
         Key) The SMILES code of the building blocks.
@@ -13,9 +14,13 @@ The script returns:
         3.1) Optional (-c): Calculates the building-block centroids.
         3.2) Optional (-r): Reform the unrelaxed cage from .mol file.
         3.2) Optional (-b): Reform the unrelaxed building-blocks (bb).
+
 This script is run as a command line program. See:
+
     $ python reform_cage.py <file.mol> --help
+
 Author: James T. Pegg
+
 """
 
 import argparse
@@ -68,6 +73,7 @@ def building_block_centroid(new_mol,
 def reform_cage(name, building_blocks, deconstructed_topology):
     """
     Reform the unrelaxed cage and write to file.
+
     Parameters
     ----------
     name : :class:`str`
@@ -76,10 +82,12 @@ def reform_cage(name, building_blocks, deconstructed_topology):
         A dictionary containing information on the building blocks.
     deconstructed_topology : :class: ``
         The topology of the molecule.
+
     Returns
     -------
     cage: :class: ConstructedMolecule
         The re-constructed molecule.
+
     """
 
     building_blocks_list = []
@@ -104,15 +112,18 @@ def reform_cage(name, building_blocks, deconstructed_topology):
 def write_building_blocks(name, building_blocks):
     """
     Writes the optimised building blocks to ``.mol`` file.
+
     Parameters
     ----------
     name : :class:`str`
         The name of the molecule.
     building_blocks : :class:`dict`
         A dictionary containing the building blocks.
+
     Returns
     -------
     None: :class:`NoneType`
+
     """
 
     # Create a dictionary to hold the building blocks.
@@ -137,14 +148,17 @@ def write_building_blocks(name, building_blocks):
 def topology_calc(coordination_numbers):
     """
     Finds the topology of the system.
+
     Parameters
     ----------
     coordination_numbers : :class:`list`
         The number of times a ditopic, tritopic, or quadtopic
         building block occurs.
+
     Returns
     -------
     The topology of the cage given by `stk`.
+
     Example
     -------
     The numbers in the list ``[(2, 6), (3, 4)]`` denote:
@@ -152,6 +166,7 @@ def topology_calc(coordination_numbers):
          6 = The number of times the ditopic building_block occurs.)
         (3 = A tritopic building-block.
          4 = The number of times the tritopic building_block occurs.)
+
     """
 
     if coordination_numbers == [(2, 3), (3, 2)]:
@@ -183,8 +198,10 @@ def resolve_functional_group(known_smiles,
                              building_blocks_dict,
                              smiles_fragments,
                              uncorrected_smiles_fragments):
+
     """
     Edits molecules based on functional group.
+
     Parameters
     ----------
     known_smiles : :class:`str`
@@ -203,9 +220,11 @@ def resolve_functional_group(known_smiles,
         A list containing all the corrected building blocks.
     uncorrected_smiles_fragments : :class:`list`
         A list containing all the uncorrected building blocks.
+
     Returns
     -------
     None : :class:`NoneType`
+
     """
 
     if '*' not in known_smiles:
