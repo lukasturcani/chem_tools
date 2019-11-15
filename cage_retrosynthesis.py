@@ -97,15 +97,15 @@ def reform_cage(name, building_blocks, deconstructed_topology):
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
         if building_blocks[k][0] >= 3:
-            bb_su = stk.BuildingBlock.init_from_file(bb_Hs, [building_blocks[k][1]])
+            bb_su = stk.BuildingBlock.init_from_rdkit_mol(bb_Hs, [building_blocks[k][1]])
             if bb_su not in building_blocks:
                 building_blocks_list.append(bb_su)
         else:
-            bb_su = stk.BuildingBlock.init_from_file(bb_Hs, [building_blocks[k][1]])
+            bb_su = stk.BuildingBlock.init_from_rdkit_mol(bb_Hs, [building_blocks[k][1]])
             if bb_su not in building_blocks_list:
                 building_blocks_list.append(bb_su)
 
-    cage = stk.Cage(building_blocks_list, deconstructed_topology)
+    cage = stk.ConstructedMolecule(building_blocks_list, deconstructed_topology)
 
     return cage
 
@@ -136,11 +136,11 @@ def write_building_blocks(name, building_blocks):
         bb_Hs = AllChem.AddHs(bb_mol)
         AllChem.EmbedMolecule(bb_Hs)
         if building_blocks[k][0] >= 3:
-            bb_su = stk.BuildingBlock.init_from_file(bb_Hs, [building_blocks[k][1]])
+            bb_su = stk.BuildingBlock.init_from_rdkit_mol(bb_Hs, [building_blocks[k][1]])
             bb_su.write('BuildingBlocks/' + name +
                         '-' + str(wbb_count) + 'bb.mol')
         else:
-            bb_su = stk.BuildingBlock.init_from_file(bb_Hs, [building_blocks[k][1]])
+            bb_su = stk.BuildingBlock.init_from_rdkit_mol(bb_Hs, [building_blocks[k][1]])
             bb_su.write('BuildingBlocks/' + name +
                         '-' + str(wbb_count) + 'bb.mol')
         wbb_count += 1
