@@ -19,6 +19,7 @@ This script is run as a command line program. See:
     $ python reform_cage.py <file.mol> --help
     
 Author: James T. Pegg
+
 """
 
 import argparse
